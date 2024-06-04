@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "396185360207",
+    "project_id": "bucksbuddy-a19e7",
+    "storage_bucket": "bucksbuddy-a19e7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:396185360207:android:c8739aca45c9186fa6973a",
+        "android_client_info": {
+          "package_name": "com.example.bucks_buddy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "396185360207-eh7ofkqaksq25efocak8ikilvcmiubt5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bucks_buddy",
+            "certificate_hash": "c01f4d26e82b9cf97e11c1fd24a84579bcdd97af"
+          }
+        },
+        {
+          "client_id": "396185360207-v1kabi4l6b33uteu91g7rd6c8jfni7ve.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPEmCQHD7sP7ku9kT8WUaMdsnE493oq_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "396185360207-v1kabi4l6b33uteu91g7rd6c8jfni7ve.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "396185360207-k198ajovrspo8j5e7leen3vq3mcdv3dg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bucksBuddy"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
