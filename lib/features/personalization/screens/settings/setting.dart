@@ -3,7 +3,7 @@ import 'package:bucks_buddy/common/widgets/custom_shapes/containers/primary_head
 import 'package:bucks_buddy/common/widgets/heading/section_heading.dart';
 import 'package:bucks_buddy/common/widgets/list_tile/settings_menu_tile.dart';
 import 'package:bucks_buddy/common/widgets/list_tile/user_profile_tile.dart';
-import 'package:bucks_buddy/features/authentication/screens/login/login.dart';
+import 'package:bucks_buddy/data/repositories/authentication/authentication_repository.dart';
 import 'package:bucks_buddy/features/personalization/screens/profile/profile.dart';
 import 'package:bucks_buddy/utils/constants/colors.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
@@ -79,7 +79,7 @@ class SettingScreen extends StatelessWidget {
                   const SizedBox(height: TSizes.spaceBtwSections,),
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton(onPressed: ()=> Get.offAll(() => const LoginScreen()), child: const Text('Logout')),
+                    child: OutlinedButton(onPressed: () => AuthenticationRepository.instance.logout(), child: const Text('Logout')),
                   ),
                   const SizedBox(height: TSizes.spaceBtwSections*2.5,)
                 ],

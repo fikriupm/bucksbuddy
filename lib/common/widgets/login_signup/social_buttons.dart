@@ -1,5 +1,7 @@
 
+import 'package:bucks_buddy/features/authentication/controllers/login/login_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 
 class TSocialButtons extends StatelessWidget {
@@ -7,6 +9,8 @@ class TSocialButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(LoginController());
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -14,9 +18,7 @@ class TSocialButtons extends StatelessWidget {
           child: SignInButton(
             Buttons.google,
             text: "Continue with Google",
-            onPressed: () {
-              // Add your Google sign-up logic here
-            },
+            onPressed: () => controller.googleSignIn(),
           ),
         ),
       ],
