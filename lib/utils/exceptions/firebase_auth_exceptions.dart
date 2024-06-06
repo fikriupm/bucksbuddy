@@ -9,10 +9,6 @@ class TFirebaseAuthException implements Exception {
   /// Get the corresponding error message based on the error code.
   String get message {
     switch (code) {
-      case 'unkown':
-        return 'An unknown Firebase error occured. Please try again.';
-      case 'invalid-custom-token':
-        return 'The custom token format is incorrect. Please check your custom token.';
       case 'email-already-in-use':
         return 'The email address is already registered. Please use a different email.';
       case 'invalid-email':
