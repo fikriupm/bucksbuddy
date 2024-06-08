@@ -1,3 +1,4 @@
+import 'package:bucks_buddy/data/repositories/user/user_repository.dart';
 import 'package:bucks_buddy/features/authentication/screens/login/login.dart';
 import 'package:bucks_buddy/features/authentication/screens/onboarding/onboarding.dart';
 import 'package:bucks_buddy/features/authentication/screens/signup/verify_email.dart';
@@ -21,6 +22,9 @@ class AuthenticationRepository extends GetxController {
   final deviceStorage = GetStorage();
   final _auth = FirebaseAuth.instance;
 
+  /// get authenticated user data
+  User? get authUser => _auth.currentUser;
+
   /// Called from main.dart on app launch
   @override
   void onReady() {
@@ -33,12 +37,11 @@ class AuthenticationRepository extends GetxController {
     final user = _auth.currentUser;
     
     if (user != null) {
-      //if user logged in
+       //if user logged in
       if (user.emailVerified) {
-        //if user email is verified, navigate to navigationmenu
         Get.offAll(() => const NavigationMenu());
       } else {
-        //if not verify, go to verifyemailscreen
+        //if user email is verified, navigate to navigationmenu
         Get.offAll(() => VerifyEmailScreen(
               email: _auth.currentUser?.email,
             ));
@@ -110,7 +113,46 @@ class AuthenticationRepository extends GetxController {
     }
   }
 
-  /// [GoogleAuthentication] - Mail Verification
+  /// [EmailAuthentication] - Forget Password
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw TFirebaseAuthException(e.code).message;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again';
+    }
+  }
+
+  /// [ReAuthenticate] - Reauthenticate user
+  Future<void> reAuthenticateWithEmailAndPassword(String email, String password) async {
+    try {
+
+      //create credential
+      AuthCredential credential = EmailAuthProvider.credential(email: email, password: password);
+      //Reauthenticate
+      await _auth.currentUser!.reauthenticateWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw TFirebaseAuthException(e.code).message;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again';
+    }
+  }
+
+
+  /// [GoogleAuthentication] - Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
       //Trigger the authentication flow
@@ -139,13 +181,30 @@ class AuthenticationRepository extends GetxController {
     }
   }
 
-
-
   /// [Logout] - valid for any authentication
   Future<void> logout() async {
     try {
       await GoogleSignIn().signOut();
       await FirebaseAuth.instance.signOut();
+      Get.offAll(() => const LoginScreen());
+    } on FirebaseAuthException catch (e) {
+      throw TFirebaseAuthException(e.code).message;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again';
+    }
+  } 
+
+  /// delete user - remove user ut and firestore account
+  Future<void> deleteAccount() async {
+    try {
+      await UserRepository.instance.removeUserRecord(_auth.currentUser!.uid);
+      await _auth.currentUser!.delete();
       Get.offAll(() => const LoginScreen());
     } on FirebaseAuthException catch (e) {
       throw TFirebaseAuthException(e.code).message;
