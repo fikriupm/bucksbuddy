@@ -6,6 +6,7 @@ import 'package:bucks_buddy/features/personalization/screens/profile/widgets/cha
 import 'package:bucks_buddy/features/personalization/screens/profile/widgets/profile_menu.dart';
 import 'package:bucks_buddy/utils/constants/image_strings.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
+import 'package:bucks_buddy/utils/shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -26,7 +27,11 @@ class ProfileScreen extends StatelessWidget {
       /// -- Body
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 16.0), // Adjust the values as needed
+          padding: const EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: 16.0), // Adjust the values as needed
           child: Column(
             children: [
               /// Profile Picture
@@ -34,49 +39,91 @@ class ProfileScreen extends StatelessWidget {
                 width: double.infinity,
                 child: Column(
                   children: [
-                    const TCircularImage(
-                      image: TImages.user,
-                      width: 80,
-                      height: 80,
-                    ),
+                    Obx(() {
+                      final networkImage = controller.user.value.profilePicture;
+                      final image = networkImage.isNotEmpty? networkImage :TImages.user;
+                      return controller.imageUpLoading.value
+                      ? const TShimmerEffect(width: 80, height: 80, radius: 80,)
+                      : TCircularImage(
+                        image: image,
+                        width: 80,
+                        height: 80,
+                        isNetworkImage: networkImage.isNotEmpty,
+                      );
+                    }),
                     TextButton(
-                        onPressed: () {},
+                        onPressed: () => controller.uploadUserProfilePicture(),
                         child: const Text('Change Profile Picture')),
                   ],
                 ),
               ),
 
               /// Details
-              const SizedBox(height: TSizes.spaceBtwItems/2,),
+              const SizedBox(
+                height: TSizes.spaceBtwItems / 2,
+              ),
               const Divider(),
-              const SizedBox(height: TSizes.spaceBtwItems,),
+              const SizedBox(
+                height: TSizes.spaceBtwItems,
+              ),
 
               /// heading Profile Info
-              const TSectionHeading(title: 'Profile Information', showActionButton: false,),
-              const SizedBox(height: TSizes.spaceBtwItems,),
-            
-              TProfileMenu(title: 'Name', value: controller.user.value.name, onPressed: () => Get.to(() => const ChangeName()),),
-              TProfileMenu(title: 'Username', value: controller.user.value.username, onPressed: (){},),
+              const TSectionHeading(
+                title: 'Profile Information',
+                showActionButton: false,
+              ),
+              const SizedBox(
+                height: TSizes.spaceBtwItems,
+              ),
+
+              TProfileMenu(
+                title: 'Name',
+                value: controller.user.value.name,
+                onPressed: () => Get.to(() => const ChangeName()),
+              ),
+              TProfileMenu(
+                title: 'Username',
+                value: controller.user.value.username,
+                onPressed: () {},
+              ),
 
               const SizedBox(height: TSizes.spaceBtwItems),
               const Divider(),
               const SizedBox(height: TSizes.spaceBtwItems),
 
               /// Heading Personal Info
-              const TSectionHeading(title: 'Personal Information', showActionButton: false,),
-              const SizedBox(height: TSizes.spaceBtwItems,),
+              const TSectionHeading(
+                title: 'Personal Information',
+                showActionButton: false,
+              ),
+              const SizedBox(
+                height: TSizes.spaceBtwItems,
+              ),
 
-              TProfileMenu(title: 'User ID', value: controller.user.value.id, icon: Iconsax.copy, onPressed: (){}),
-              TProfileMenu(title: 'E-mail', value: controller.user.value.email, onPressed: () {}),
-              TProfileMenu(title: 'Phone Number', value: controller.user.value.phoneNumber, onPressed: () {}),
+              TProfileMenu(
+                  title: 'User ID',
+                  value: controller.user.value.id,
+                  icon: Iconsax.copy,
+                  onPressed: () {}),
+              TProfileMenu(
+                  title: 'E-mail',
+                  value: controller.user.value.email,
+                  onPressed: () {}),
+              TProfileMenu(
+                  title: 'Phone Number',
+                  value: controller.user.value.phoneNumber,
+                  onPressed: () {}),
               const Divider(),
-              const SizedBox(height: TSizes.spaceBtwItems,),
+              const SizedBox(
+                height: TSizes.spaceBtwItems,
+              ),
 
               Center(
                 child: TextButton(
-                  onPressed: () => controller.deleteAccountWarningPopup(),
-                  child: const Text('Close Account', style: TextStyle(color: Colors.red))) ,)
-
+                    onPressed: () => controller.deleteAccountWarningPopup(),
+                    child: const Text('Close Account',
+                        style: TextStyle(color: Colors.red))),
+              )
             ],
           ),
         ),
@@ -84,5 +131,3 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
-
