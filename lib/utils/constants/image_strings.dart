@@ -11,6 +11,7 @@ class TImages {
 
   // -- Social Logos
   static const String google = "assets/logos/google-icon.png";
+  static const String duitnow = "assets/logos/duitnow.png";
   static const String facebook = "assets/logos/facebook-icon.png";
 
   // -- Animations

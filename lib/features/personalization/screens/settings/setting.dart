@@ -4,6 +4,7 @@ import 'package:bucks_buddy/common/widgets/heading/section_heading.dart';
 import 'package:bucks_buddy/common/widgets/list_tile/settings_menu_tile.dart';
 import 'package:bucks_buddy/common/widgets/list_tile/user_profile_tile.dart';
 import 'package:bucks_buddy/data/repositories/authentication/authentication_repository.dart';
+import 'package:bucks_buddy/features/personalization/screens/account_transaction/account_transaction.dart';
 import 'package:bucks_buddy/features/personalization/screens/profile/profile.dart';
 import 'package:bucks_buddy/utils/constants/colors.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
@@ -35,11 +36,12 @@ class SettingScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(
-                  height: TSizes.spaceBtwSections/10,
+                  height: TSizes.spaceBtwSections / 10,
                 ),
 
                 /// User profile card
-                TUserProfileTile(onPressed: () => Get.to(() => const ProfileScreen())),
+                TUserProfileTile(
+                    onPressed: () => Get.to(() => const ProfileScreen())),
                 const SizedBox(
                   height: TSizes.spaceBtwItems,
                 ),
@@ -47,41 +49,67 @@ class SettingScreen extends StatelessWidget {
             )),
 
             /// Body
-             Padding(
+            Padding(
               padding: const EdgeInsets.all(TSizes.defaultSpace),
               child: Column(
                 children: [
                   /// --- Account Setting
-                  const TSectionHeading(title: 'Account Setting', showActionButton: false),
+                  const TSectionHeading(
+                      title: 'Account Setting', showActionButton: false),
                   const SizedBox(height: TSizes.spaceBtwItems),
 
-                  // const TSettingsMenuTile(icon: Iconsax.safe_home, title: 'My Address', subTitle: 'Set shopping delivery address'),
-                  // const TSettingsMenuTile(icon: Iconsax.shopping_cart, title: 'My Cart', subTitle: 'Add, remove products and move to checkout'),
-                  // const TSettingsMenuTile(icon: Iconsax.bag_tick, title: 'My Orders', subTitle: 'In-progress and Completed Orders'),
-                  const TSettingsMenuTile(icon: Iconsax.bank, title: 'Bank Account', subTitle: 'Registered bank account'),
-                  const TSettingsMenuTile(icon: Iconsax.notification, title: 'Notifications', subTitle: 'Set any kind of notification message'),
-                  const TSettingsMenuTile(icon: Iconsax.security_card, title: 'Account Privacy', subTitle: 'Manage data usage and connected accounts'),
+                  TSettingsMenuTile(
+                    icon: Iconsax.bank,
+                    title: 'Bank Account',
+                    subTitle: 'Registered Account for Transaction',
+                    onTap: () => Get.to(() => const TransactionAccountScreen()),
+                  ),
+                  const TSettingsMenuTile(
+                      icon: Iconsax.notification,
+                      title: 'Notifications',
+                      subTitle: 'Set any kind of notification message'),
+                  const TSettingsMenuTile(
+                      icon: Iconsax.security_card,
+                      title: 'Account Privacy',
+                      subTitle: 'Manage data usage and connected accounts'),
 
                   /// -- App settings
-                  const SizedBox(height: TSizes.spaceBtwSections,),
-                  const TSectionHeading(title: 'App Setting', showActionButton: false,),
-                  const SizedBox(height: TSizes.spaceBtwItems,),
-                  const TSettingsMenuTile(icon: Iconsax.document_upload, title: 'Load Data', subTitle: 'Upload Data to your Cloud Firebase'),
+                  const SizedBox(
+                    height: TSizes.spaceBtwSections,
+                  ),
+                  const TSectionHeading(
+                    title: 'App Setting',
+                    showActionButton: false,
+                  ),
+                  const SizedBox(
+                    height: TSizes.spaceBtwItems,
+                  ),
+                  const TSettingsMenuTile(
+                      icon: Iconsax.document_upload,
+                      title: 'Load Data',
+                      subTitle: 'Upload Data to your Cloud Firebase'),
 
                   TSettingsMenuTile(
-                  icon: Iconsax.security_user,
-                  title: 'Safe Mode',
-                  subTitle: 'Search result is safe for all ages',
-                  trailing: Switch(value: true, onChanged: (value) {}),
+                    icon: Iconsax.security_user,
+                    title: 'Safe Mode',
+                    subTitle: 'Search result is safe for all ages',
+                    trailing: Switch(value: true, onChanged: (value) {}),
                   ),
 
                   /// -- Logout button
-                  const SizedBox(height: TSizes.spaceBtwSections,),
+                  const SizedBox(
+                    height: TSizes.spaceBtwSections,
+                  ),
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton(onPressed: () => AuthenticationRepository.instance.logout(), child: const Text('Logout')),
+                    child: OutlinedButton(
+                        onPressed: () =>
+                            AuthenticationRepository.instance.logout(),
+                        child: const Text('Logout')),
                   ),
-                  const SizedBox(height: TSizes.spaceBtwSections*2.5,)
+                  const SizedBox(
+                    height: TSizes.spaceBtwSections * 2.5,
+                  )
                 ],
               ),
             )
