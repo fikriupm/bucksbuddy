@@ -63,6 +63,9 @@ dependencies:
   image_picker: ^1.1.2
   firebase_storage: ^11.7.7
   cached_network_image: ^3.3.1
+  contacts_service: ^0.6.3
+  flutter_screenutil: ^5.9.3
+  permission_handler: ^11.3.1
 
 
 

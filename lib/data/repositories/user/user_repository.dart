@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bucks_buddy/Friend.dart';
 import 'package:bucks_buddy/data/repositories/authentication/authentication_repository.dart';
 import 'package:bucks_buddy/features/authentication/models/user_model.dart';
 import 'package:bucks_buddy/utils/exceptions/firebase_exceptions.dart';
@@ -95,6 +96,25 @@ class UserRepository extends GetxController {
     }
   }
 
+/// Function to fetch all users from Firestore.
+  Future<List<UserModel>> fetchAllUsers() async {
+    try {
+      final querySnapshot = await _db.collection("Users").get();
+      return querySnapshot.docs.map((doc) => UserModel.fromSnapshot(doc)).toList();
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again';
+    }
+  }
+
+  Future<void> addFriend(Friend friend) async {
+    await _db.collection('friends').add(friend.toMap());
+  }
   ///upload any image
   Future<String> uploadImage(String path, XFile image) async {
     try {
