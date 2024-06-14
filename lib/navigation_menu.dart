@@ -22,7 +22,13 @@ class NavigationMenu extends StatelessWidget {
           height: 70,
           elevation: 0,
           selectedIndex: controller.selectedIndex.value,
-          onDestinationSelected: (index) => controller.selectedIndex.value = index, 
+          onDestinationSelected: (index) {
+            if (index == 1) {
+              Get.to(() => FriendScreen());
+            } else{
+              controller.selectedIndex.value = index;
+            }
+          },
           backgroundColor: darkMode ? TColors.black : const Color.fromARGB(255, 218, 202, 83),  
           indicatorColor: darkMode ? TColors.white.withOpacity(0.1) : TColors.black.withOpacity(0.1),   
           destinations: const [
@@ -43,7 +49,6 @@ class NavigationController extends GetxController {
 
   final screens = [
     const Homepage(),
-    FriendScreen(), 
     Container(color: Colors.orange),
     const SettingScreen(),
   ];

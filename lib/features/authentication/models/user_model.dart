@@ -10,6 +10,7 @@ class UserModel {
   String phoneNumber;
   final String email;
   String profilePicture;
+  List<Map<String, String>> friends;
 
   //Constructor for UserModel
   UserModel({
@@ -19,6 +20,7 @@ class UserModel {
     required this.phoneNumber,
     required this.email,
     required this.profilePicture,
+    this.friends = const [],
   });
 
   /// helper function to get the name
@@ -43,7 +45,8 @@ class UserModel {
       username: '',
       phoneNumber: '',
       email: '',
-      profilePicture: '');
+      profilePicture: '',
+      friends: []);
 
   /// static function to JSON structure for storing data in firebase
   Map<String, dynamic> toJson() {
@@ -53,24 +56,36 @@ class UserModel {
       'Email': email,
       'PhoneNumber': phoneNumber,
       'ProfilePicture': profilePicture,
+      'friends': friends.map((friend) => {
+            'friendId': friend['friendId'],
+            'friendUsername': friend['friendUsername']
+          }).toList(),
     };
   }
 
   /// Factory method to create a UserModel from a Firebase document snapshot
-  factory UserModel.fromSnapshot(
-      DocumentSnapshot<Map<String, dynamic>> document) {
-    if (document.data() != null) {
-      final data = document.data()!;
-      return UserModel(
-        id: document.id,
-        name: data['Name'] ?? '',
-        username: data['Username'] ?? '',
-        phoneNumber: data['PhoneNumber'] ?? '',
-        email: data['Email'] ?? '',
-        profilePicture: data['ProfilePicture'] ?? '',
+  factory UserModel.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
+    final data = document.data()!;
+    List<Map<String, String>> friendsList = [];
+
+    if (data['friends'] != null) {
+      friendsList = List<Map<String, String>>.from(
+        (data['friends'] as List).map(
+          (item) => (item as Map).map(
+            (key, value) => MapEntry(key.toString(), value.toString())
+          )
+        )
       );
-    } else {
-      return UserModel.empty();
     }
+
+    return UserModel(
+      id: document.id,
+      name: data['Name'] ?? '',
+      username: data['Username'] ?? '',
+      phoneNumber: data['PhoneNumber'] ?? '',
+      email: data['Email'] ?? '',
+      profilePicture: data['ProfilePicture'] ?? '',
+      friends: friendsList,
+    );
   }
 }
