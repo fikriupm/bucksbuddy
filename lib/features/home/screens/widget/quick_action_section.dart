@@ -1,4 +1,4 @@
-
+import 'package:bucks_buddy/features/home/CreateDebt/createDebt.dart';
 import 'package:bucks_buddy/utils/constants/image_strings.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +51,13 @@ class QuickActionIcon extends StatelessWidget {
               color: Colors.grey.withOpacity(0.2),
               borderRadius: BorderRadius.circular(100)),
           child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CreateDebtPage()),
+                );
+              },
               icon: const Image(
                 image: AssetImage(TImages.createDebt),
               )),

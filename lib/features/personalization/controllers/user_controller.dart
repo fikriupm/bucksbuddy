@@ -8,6 +8,7 @@ import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:bucks_buddy/utils/helpers/network_manager.dart';
 import 'package:bucks_buddy/utils/popups/full_screen_loader.dart';
 import 'package:bucks_buddy/utils/popups/loaders.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -40,6 +41,27 @@ class UserController extends GetxController {
       this.user(user);
     } catch (e) {
       user(UserModel.empty());
+    } finally {
+      profileLoading.value = false;
+    }
+  }
+
+  /// Check if debtor exists in Firestore
+  Future<bool> doesDebtorExist(String debtorusername) async {
+    try {
+      profileLoading.value = true;
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('Username', isEqualTo: debtorusername)
+          .get();
+
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      TLoaders.warningSnackBar(
+        title: 'Error',
+        message: 'Error checking debtor existence: $e',
+      );
+      return false;
     } finally {
       profileLoading.value = false;
     }
@@ -176,13 +198,14 @@ class UserController extends GetxController {
 
         user.value.profilePicture = imageUrl;
         user.refresh();
-        
+
         TLoaders.successSnackBar(
             title: 'Congratulations',
             message: 'Your Profile Image has been updated');
       }
     } catch (e) {
-      TLoaders.warningSnackBar(title: 'Oh Snap!', message: 'Something went wrong:  $e');
+      TLoaders.warningSnackBar(
+          title: 'Oh Snap!', message: 'Something went wrong:  $e');
     } finally {
       imageUpLoading.value = false;
     }
