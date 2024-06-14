@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:bucks_buddy/data/repositories/authentication/authentication_repository.dart';
 import 'package:bucks_buddy/features/authentication/models/user_model.dart';
 import 'package:bucks_buddy/utils/exceptions/firebase_exceptions.dart';
@@ -95,6 +94,30 @@ class UserRepository extends GetxController {
     }
   }
 
+/// Function to fetch all users from Firestore.
+  Future<List<UserModel>> fetchAllUsers() async {
+  try {
+    final querySnapshot = await _db.collection("Users").get();
+    if (querySnapshot.docs.isEmpty) {
+      print('No users found in the collection.');
+      return [];
+    }
+    return querySnapshot.docs.map((doc) => UserModel.fromSnapshot(doc)).toList();
+  } on FirebaseException catch (e) {
+    print('FirebaseException: ${e.code}');
+    throw TFirebaseException(e.code).message;
+  } on FormatException catch (e) {
+    print('FormatException: $e');
+    throw const TFormatException();
+  } on PlatformException catch (e) {
+    print('PlatformException: ${e.code}');
+    throw TPlatformException(e.code).message;
+  } catch (e) {
+    print('Unknown exception: $e');
+    throw 'Something went wrong. Please try again';
+  }
+}
+
   ///upload any image
   Future<String> uploadImage(String path, XFile image) async {
     try {
@@ -114,4 +137,59 @@ class UserRepository extends GetxController {
       throw 'Something went wrong. Please try again';
     }
   }
+
+  //Function to add friends to user's friend list
+  Future<void> addFriend(String userId, String friendId, String friendUsername) async {
+    try {
+      // Construct the friend object with id and username
+      Map<String, String> friend = {
+        'friendId': friendId,
+        'friendUsername': friendUsername,
+      };
+
+      // Update the user's friends list to add the friend
+      await _db.collection('Users').doc(userId).update({
+        'friends': FieldValue.arrayUnion([friend]),
+      });
+    } catch (e) {
+      throw 'Failed to add friend: $e';
+    }
+  }
+
+  //Function to remove friend from user friends list
+   Future<void> removeFriend(String userId, String friendId) async {
+    try {
+      // Update the user's friends list to remove the friendId
+      await _db.collection('Users').doc(userId).update({
+        'friends': FieldValue.arrayRemove([friendId]),
+      });
+    } catch (e) {
+      throw 'Failed to remove friend: $e';
+    }
+  }
+
+  //Function to retrieve current user's friends
+  Future<List<String>> fetchCurrentUserFriends(String userId) async {
+  try {
+    final documentSnapshot =
+        await _db.collection("Users").doc(userId).get();
+    if (documentSnapshot.exists) {
+      final userData = documentSnapshot.data();
+      if (userData != null && userData['friends'] != null) {
+        final List<dynamic> friendsData = userData['friends'];
+        return friendsData.map<String>((friend) => friend['friendId'].toString()).toList();
+      }
+    }
+    return [];
+  } on FirebaseException catch (e) {
+    throw TFirebaseException(e.code).message;
+  } on FormatException catch (_) {
+    throw const TFormatException();
+  } on PlatformException catch (e) {
+    throw TPlatformException(e.code).message;
+  } catch (e) {
+    throw 'Something went wrong. Please try again';
+  }
+}
+
 }

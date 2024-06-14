@@ -6,6 +6,8 @@ import 'package:iconsax/iconsax.dart';
 import 'package:bucks_buddy/utils/constants/colors.dart';
 import 'package:bucks_buddy/utils/helpers/helper_functions.dart';
 
+import 'addFriendScreen.dart';
+
 class NavigationMenu extends StatelessWidget {
   const NavigationMenu({super.key});
 
@@ -20,7 +22,13 @@ class NavigationMenu extends StatelessWidget {
           height: 70,
           elevation: 0,
           selectedIndex: controller.selectedIndex.value,
-          onDestinationSelected: (index) => controller.selectedIndex.value = index, 
+          onDestinationSelected: (index) {
+            if (index == 1) {
+              Get.to(() => FriendScreen());
+            } else{
+              controller.selectedIndex.value = index;
+            }
+          },
           backgroundColor: darkMode ? TColors.black : const Color.fromARGB(255, 218, 202, 83),  
           indicatorColor: darkMode ? TColors.white.withOpacity(0.1) : TColors.black.withOpacity(0.1),   
           destinations: const [
@@ -36,9 +44,12 @@ class NavigationMenu extends StatelessWidget {
   }
 }
 
-
-class NavigationController extends GetxController{
+class NavigationController extends GetxController {
   final Rx<int> selectedIndex = 0.obs;
 
-  final screens = [const Homepage(), Container(color: Colors.blue), Container(color: Colors.orange), const SettingScreen(),];
+  final screens = [
+    const Homepage(),
+    Container(color: Colors.orange),
+    const SettingScreen(),
+  ];
 }
