@@ -1,7 +1,10 @@
 import 'package:bucks_buddy/features/home/CreateDebt/createDebt.dart';
+import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
+import 'package:bucks_buddy/features/payment/screen/DebtBuddyPayApps.dart';
 import 'package:bucks_buddy/utils/constants/image_strings.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class QuickActionSection extends StatelessWidget {
   const QuickActionSection({
@@ -43,6 +46,7 @@ class QuickActionIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final PaymentController paymentController = Get.put(PaymentController());
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -54,8 +58,7 @@ class QuickActionIcon extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const CreateDebtPage()),
+                  MaterialPageRoute(builder: (context) => CreateDebtPage()),
                 );
               },
               icon: const Image(
@@ -70,7 +73,9 @@ class QuickActionIcon extends StatelessWidget {
               color: Colors.grey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(100)),
           child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                //Get.to(PaymentDetails());
+              },
               icon: const Image(
                 image: AssetImage(TImages.splitBills),
               )),
@@ -83,7 +88,10 @@ class QuickActionIcon extends StatelessWidget {
               color: Colors.grey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(100)),
           child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                paymentController.fetchDebtTicket();
+                Get.to(DebtBuddyPayApp());
+              },
               icon: const Image(
                 image: AssetImage(TImages.viewDebt),
               )),
