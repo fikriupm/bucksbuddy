@@ -1,10 +1,12 @@
-import 'package:bucks_buddy/features/home/CreateDebt/createDebt.dart';
-import 'package:bucks_buddy/features/personalization/controllers/debt_ticket_controller.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
+// display_form.dart
 
-import 'submitted.dart'; // Adjust the import path if necessary
+import 'package:bucks_buddy/features/home/CreateDebt/createDebt.dart';
+import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
+import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
+import 'package:bucks_buddy/features/home/CreateDebt/submitted.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
 class DisplayForm extends StatefulWidget {
   final Map<String, dynamic> ticketData;
@@ -18,18 +20,20 @@ class DisplayForm extends StatefulWidget {
 }
 
 class _DisplayFormState extends State<DisplayForm> {
-  final DebtTicketController debtTicketController = DebtTicketController();
-  Future<String>? debtorInfoFuture;
+  final DebtTicketController debtTicketController = Get.find();
+  late Future<String> debtorInfoFuture;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    debtorInfoFuture = _fetchDebtorInfo(widget.ticketData['debtor']);
+  void initState() {
+    super.initState();
+    debtorInfoFuture =
+        debtTicketController.fetchDebtorInfo(widget.ticketData['debtor']);
   }
 
   Future<void> _submitToFirebase(BuildContext context) async {
     try {
-      await debtTicketController.saveDebtTicket(widget.ticketData, widget.id);
+      DebtTicket debtTicket = DebtTicket.fromJson(widget.ticketData);
+      await debtTicketController.saveDebtTicket(debtTicket, widget.id);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SubmittedPage()),
@@ -68,7 +72,7 @@ class _DisplayFormState extends State<DisplayForm> {
                 future: debtorInfoFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else {
@@ -80,9 +84,7 @@ class _DisplayFormState extends State<DisplayForm> {
                             'Creditor', widget.ticketData['creditor']),
                         _buildTicketDetail('Debtor', debtorInfo),
                         _buildTicketDetail(
-                            'Phone Number/Email',
-                            widget.ticketData[
-                                'PhoneNumber/Email']), // Placeholder for future data
+                            'Phone Number', widget.ticketData['phoneNumber']),
                         _buildTicketDetail(
                             'Amount', 'RM ${widget.ticketData['amount']}'),
                         _buildTicketDetail(
@@ -98,11 +100,10 @@ class _DisplayFormState extends State<DisplayForm> {
                         ),
                         const SizedBox(height: 20),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .end, // Align buttons to the right
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: <Widget>[
                             SizedBox(
-                              width: 120, // Adjust button width as needed
+                              width: 120,
                               child: ElevatedButton(
                                 onPressed: () {
                                   Navigator.pushReplacement(
@@ -114,7 +115,8 @@ class _DisplayFormState extends State<DisplayForm> {
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                   backgroundColor:
                                       const Color(0xFFF0CA00).withOpacity(0.82),
                                 ),
@@ -127,11 +129,12 @@ class _DisplayFormState extends State<DisplayForm> {
                             ),
                             const SizedBox(width: 10),
                             SizedBox(
-                              width: 120, // Adjust button width as needed
+                              width: 120,
                               child: ElevatedButton(
                                 onPressed: () => _submitToFirebase(context),
                                 style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                   backgroundColor:
                                       const Color(0xFFF0CA00).withOpacity(0.82),
                                 ),
@@ -154,28 +157,6 @@ class _DisplayFormState extends State<DisplayForm> {
         ),
       ),
     );
-  }
-
-  Future<String> _fetchDebtorInfo(String username) async {
-    try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .where('Username', isEqualTo: username)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        final userData = querySnapshot.docs.first.data();
-        final username = userData['Username'] ?? 'Unknown Username';
-        final name = userData['Name'] ?? 'Unknown Name';
-
-        return '$username / $name';
-      } else {
-        return 'Unknown Debtor'; // Default if user not found
-      }
-    } catch (e) {
-      print('Error fetching debtor info: $e');
-      return 'Unknown Debtor';
-    }
   }
 
   Widget _buildTicketDetail(String label, String value) {

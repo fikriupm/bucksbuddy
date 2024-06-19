@@ -1,6 +1,8 @@
+// create_debt_page.dart
+import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
+import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/displayForm.dart';
-import 'package:bucks_buddy/features/personalization/controllers/bank_account_controller.dart';
-import 'package:bucks_buddy/features/personalization/controllers/user_controller.dart';
+import 'package:bucks_buddy/utils/constants/image_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,7 +15,8 @@ class CreateDebtPage extends StatefulWidget {
 
 class _CreateDebtPageState extends State<CreateDebtPage> {
   final _formKey = GlobalKey<FormState>();
-
+  final DebtTicketController debtTicketController =
+      Get.put(DebtTicketController());
   // Form field controllers
   final TextEditingController _creditorController = TextEditingController();
   final TextEditingController _debtorController = TextEditingController();
@@ -22,10 +25,10 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
   final TextEditingController _bankAccountNoController =
       TextEditingController();
   final TextEditingController _referenceController = TextEditingController();
+  final TextEditingController _creditorIDController = TextEditingController();
+  final TextEditingController _phoneNumController = TextEditingController();
 
-  final bankAccountController = BankAccountController.instance;
-  TextEditingController _creditorIDController = TextEditingController();
-  TextEditingController _phoneNumController = TextEditingController();
+  //
 
   @override
   void initState() {
@@ -36,20 +39,15 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
   // Method to fetch user data and auto-fill form fields
   void _fetchUserData() async {
     try {
-      final data = await bankAccountController.getAllUserBankAccount();
-      final controller =
-          Get.find<UserController>(); // Assuming you are using GetX
+      final data = await debtTicketController.fetchUserData();
 
-      if (data.isNotEmpty) {
-        setState(() {
-          _creditorController.text =
-              '${controller.user.value.username} / ${controller.user.value.fullName}';
-          _bankAccountController.text = data.first.bankName;
-          _bankAccountNoController.text = data.first.accountNumber;
-          _creditorIDController.text = controller.user.value.id;
-          _phoneNumController.text = controller.user.value.phoneNumber;
-        });
-      }
+      setState(() {
+        _creditorController.text = '${data['username']} / ${data['fullName']}';
+        _bankAccountController.text = data['bankName'];
+        _bankAccountNoController.text = data['accountNumber'];
+        _creditorIDController.text = data['userId'];
+        _phoneNumController.text = data['phoneNumber'];
+      });
     } catch (e) {
       // Handle error
     }
@@ -69,56 +67,60 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
 
   void _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final UserController userController = UserController.instance;
-
-      // Check if the debtor exists
       final debtorExists =
-          await userController.doesDebtorExist(_debtorController.text);
+          await debtTicketController.doesDebtorExist(_debtorController.text);
 
       if (!debtorExists) {
-        // Show an alert dialog if the debtor does not exist
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: const Text('The debtor does not exist.'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-        return; // Stop further execution
+        _showErrorDialog('The debtor does not exist.');
+        return;
       }
 
-      final ticketData = {
-        'creditor': _creditorController.text,
-        'debtor': _debtorController.text,
-        'amount': _amountController.text,
-        'bankAccount': _bankAccountController.text,
-        'bankAccountNumber': _bankAccountNoController.text,
-        'reference': _referenceController.text,
-        'PhoneNumber/Email': _phoneNumController.text,
-        'dateTime': DateTime.now().toString(),
-        'status': 'not_paid', // Default status
-      };
+      final ticketData = DebtTicket(
+        creditor: _creditorController.text,
+        debtor: _debtorController.text,
+        amount: _amountController.text,
+        bankAccount: _bankAccountController.text,
+        bankAccountNumber: _bankAccountNoController.text,
+        reference: _referenceController.text,
+        phoneNumber: _phoneNumController.text,
+        dateTime: DateTime.now().toString(),
+        status: 'not_paid',
+        //debtTicketId: debtTicketController.generatedTicketId()
+      );
+
+      await debtTicketController.saveDebtTicket(
+          ticketData, _creditorIDController.text);
 
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => DisplayForm(
-            ticketData: ticketData,
+            ticketData: ticketData.toJson(),
             id: _creditorIDController.text,
           ),
         ),
       );
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showOverlay(BuildContext context, String message, GlobalKey key) {
@@ -246,7 +248,8 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
               children: <Widget>[
                 Center(
                   child: Image.asset(
-                    'assets/logos/company_logo.png', // Ensure this path matches your asset structure
+                    TImages
+                        .logoMain, // Ensure this path matches your asset structure
                     height: 100,
                   ),
                 ),

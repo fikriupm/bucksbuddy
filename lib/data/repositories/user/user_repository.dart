@@ -35,9 +35,12 @@ class UserRepository extends GetxController {
   Future<UserModel> fetchUserDetails() async {
     try {
       //data in json, json called map, data in string, dynamic is value
-      final documentSnapshot = await _db.collection("Users").doc(AuthenticationRepository.instance.authUser?.uid).get();
-      if (documentSnapshot.exists){
-        return UserModel.fromSnapshot(documentSnapshot);
+      final documentSnapshot = await _db
+          .collection("Users")
+          .doc(AuthenticationRepository.instance.authUser?.uid)
+          .get();
+      if (documentSnapshot.exists) {
+        return UserModel.fromJson(documentSnapshot);
       } else {
         return UserModel.empty();
       }
@@ -51,10 +54,14 @@ class UserRepository extends GetxController {
       throw 'Something went wrong. Please try again';
     }
   }
+
   /// Function to update user data in Firestore.
   Future<void> updateUserDetails(UserModel updatedUser) async {
     try {
-      await _db.collection("Users").doc(updatedUser.id).set(updatedUser.toJson());
+      await _db
+          .collection("Users")
+          .doc(updatedUser.id)
+          .set(updatedUser.toJson());
     } on FirebaseException catch (e) {
       throw TFirebaseException(e.code).message;
     } on FormatException catch (_) {
@@ -65,10 +72,14 @@ class UserRepository extends GetxController {
       throw 'Something went wrong. Please try again';
     }
   }
+
   /// update any field in specific user in collection
   Future<void> updateSingleField(Map<String, dynamic> json) async {
     try {
-      await _db.collection("Users").doc(AuthenticationRepository.instance.authUser?.uid).update(json);
+      await _db
+          .collection("Users")
+          .doc(AuthenticationRepository.instance.authUser?.uid)
+          .update(json);
     } on FirebaseException catch (e) {
       throw TFirebaseException(e.code).message;
     } on FormatException catch (_) {
@@ -79,6 +90,7 @@ class UserRepository extends GetxController {
       throw 'Something went wrong. Please try again';
     }
   }
+
   /// function to remove user data from firestore
   Future<void> removeUserRecord(String userId) async {
     try {
@@ -94,39 +106,37 @@ class UserRepository extends GetxController {
     }
   }
 
-/// Function to fetch all users from Firestore.
+  /// Function to fetch all users from Firestore.
   Future<List<UserModel>> fetchAllUsers() async {
-  try {
-    final querySnapshot = await _db.collection("Users").get();
-    if (querySnapshot.docs.isEmpty) {
-      print('No users found in the collection.');
-      return [];
+    try {
+      final querySnapshot = await _db.collection("Users").get();
+      if (querySnapshot.docs.isEmpty) {
+        print('No users found in the collection.');
+        return [];
+      }
+      return querySnapshot.docs.map((doc) => UserModel.fromJson(doc)).toList();
+    } on FirebaseException catch (e) {
+      print('FirebaseException: ${e.code}');
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (e) {
+      print('FormatException: $e');
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      print('PlatformException: ${e.code}');
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      print('Unknown exception: $e');
+      throw 'Something went wrong. Please try again';
     }
-    return querySnapshot.docs.map((doc) => UserModel.fromSnapshot(doc)).toList();
-  } on FirebaseException catch (e) {
-    print('FirebaseException: ${e.code}');
-    throw TFirebaseException(e.code).message;
-  } on FormatException catch (e) {
-    print('FormatException: $e');
-    throw const TFormatException();
-  } on PlatformException catch (e) {
-    print('PlatformException: ${e.code}');
-    throw TPlatformException(e.code).message;
-  } catch (e) {
-    print('Unknown exception: $e');
-    throw 'Something went wrong. Please try again';
   }
-}
 
   ///upload any image
   Future<String> uploadImage(String path, XFile image) async {
     try {
-
       final ref = FirebaseStorage.instance.ref(path).child(image.name);
       await ref.putFile(File(image.path));
       final url = await ref.getDownloadURL();
       return url;
-      
     } on FirebaseException catch (e) {
       throw TFirebaseException(e.code).message;
     } on FormatException catch (_) {
@@ -139,7 +149,8 @@ class UserRepository extends GetxController {
   }
 
   //Function to add friends to user's friend list
-  Future<void> addFriend(String userId, String friendId, String friendUsername) async {
+  Future<void> addFriend(
+      String userId, String friendId, String friendUsername) async {
     try {
       // Construct the friend object with id and username
       Map<String, String> friend = {
@@ -157,7 +168,7 @@ class UserRepository extends GetxController {
   }
 
   //Function to remove friend from user friends list
-   Future<void> removeFriend(String userId, String friendId) async {
+  Future<void> removeFriend(String userId, String friendId) async {
     try {
       // Update the user's friends list to remove the friendId
       await _db.collection('Users').doc(userId).update({
@@ -170,26 +181,26 @@ class UserRepository extends GetxController {
 
   //Function to retrieve current user's friends
   Future<List<String>> fetchCurrentUserFriends(String userId) async {
-  try {
-    final documentSnapshot =
-        await _db.collection("Users").doc(userId).get();
-    if (documentSnapshot.exists) {
-      final userData = documentSnapshot.data();
-      if (userData != null && userData['friends'] != null) {
-        final List<dynamic> friendsData = userData['friends'];
-        return friendsData.map<String>((friend) => friend['friendId'].toString()).toList();
+    try {
+      final documentSnapshot = await _db.collection("Users").doc(userId).get();
+      if (documentSnapshot.exists) {
+        final userData = documentSnapshot.data();
+        if (userData != null && userData['friends'] != null) {
+          final List<dynamic> friendsData = userData['friends'];
+          return friendsData
+              .map<String>((friend) => friend['friendId'].toString())
+              .toList();
+        }
       }
+      return [];
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again';
     }
-    return [];
-  } on FirebaseException catch (e) {
-    throw TFirebaseException(e.code).message;
-  } on FormatException catch (_) {
-    throw const TFormatException();
-  } on PlatformException catch (e) {
-    throw TPlatformException(e.code).message;
-  } catch (e) {
-    throw 'Something went wrong. Please try again';
   }
-}
-
 }
