@@ -1,5 +1,7 @@
 import 'package:bucks_buddy/features/home/homepage.dart';
+import 'package:bucks_buddy/features/personalization/screens/profile/profile.dart';
 import 'package:bucks_buddy/features/personalization/screens/settings/setting.dart';
+//import 'package:bucks_buddy/features/view_debt_analysis/screen/expenses/expenses.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -57,3 +59,4 @@ class NavigationController extends GetxController {
    const SettingScreen(),
  ];
 }
+
