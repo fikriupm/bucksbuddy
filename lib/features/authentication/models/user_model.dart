@@ -1,89 +1,101 @@
 import 'package:bucks_buddy/utils/formatters/formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 /// Model class representing user data
 class UserModel {
-  // keep thosse values final which you do not want to update
-  final String id;
-  String name;
-  final String username;
-  String phoneNumber;
-  final String email;
-  String profilePicture;
-  List<Map<String, String>> friends;
+ // keep thosse values final which you do not want to update
+ final String id;
+ String name;
+ final String username;
+ String phoneNumber;
+ final String email;
+ String profilePicture;
+ List<Map<String, String>> friends;
 
-  //Constructor for UserModel
-  UserModel({
-    required this.id,
-    required this.name,
-    required this.username,
-    required this.phoneNumber,
-    required this.email,
-    required this.profilePicture,
-    this.friends = const [],
-  });
 
-  /// helper function to get the name
-  String get fullName => name;
+ //Constructor for UserModel
+ UserModel({
+   required this.id,
+   required this.name,
+   required this.username,
+   required this.phoneNumber,
+   required this.email,
+   required this.profilePicture,
+   this.friends = const [],
+ });
 
-  ///Helper function to format phoneNumber
-  String get formattedPhoneNo => TFormatter.formatPhoneNumber(phoneNumber);
 
-  ///Static function to generate a username from full name
-  static String generateUserName(String name) {
-    String camelCaseUsername = name
-        .replaceAll(' ', '')
-        .toLowerCase(); // Combine name and convert to lowercase
-    String usernameWithPrefix = "bb_$camelCaseUsername"; // Add "bb_" prefix
-    return usernameWithPrefix;
-  }
+ /// helper function to get the name
+ String get fullName => name;
 
-  /// static function to create an empty user model
-  static UserModel empty() => UserModel(
-      id: '',
-      name: '',
-      username: '',
-      phoneNumber: '',
-      email: '',
-      profilePicture: '',
-      friends: []);
 
-  /// static function to JSON structure for storing data in firebase
-  Map<String, dynamic> toJson() {
-    return {
-      'Name': name,
-      'Username': username,
-      'Email': email,
-      'PhoneNumber': phoneNumber,
-      'ProfilePicture': profilePicture,
-      'friends': friends
-          .map((friend) => {
-                'friendId': friend['friendId'],
-                'friendUsername': friend['friendUsername']
-              })
-          .toList(),
-    };
-  }
+ ///Helper function to format phoneNumber
+ String get formattedPhoneNo => TFormatter.formatPhoneNumber(phoneNumber);
 
-  /// Factory method to create a UserModel from a Firebase document snapshot
-  factory UserModel.fromJson(DocumentSnapshot<Map<String, dynamic>> document) {
-    final data = document.data()!;
-    List<Map<String, String>> friendsList = [];
 
-    if (data['friends'] != null) {
-      friendsList = List<Map<String, String>>.from((data['friends'] as List)
-          .map((item) => (item as Map).map(
-              (key, value) => MapEntry(key.toString(), value.toString()))));
-    }
+ ///Static function to generate a username from full name
+ static String generateUserName(String name) {
+   String camelCaseUsername = name
+       .replaceAll(' ', '')
+       .toLowerCase(); // Combine name and convert to lowercase
+   String usernameWithPrefix = "bb_$camelCaseUsername"; // Add "bb_" prefix
+   return usernameWithPrefix;
+ }
 
-    return UserModel(
-      id: document.id,
-      name: data['Name'] ?? '',
-      username: data['Username'] ?? '',
-      phoneNumber: data['PhoneNumber'] ?? '',
-      email: data['Email'] ?? '',
-      profilePicture: data['ProfilePicture'] ?? '',
-      friends: friendsList,
-    );
-  }
+
+ /// static function to create an empty user model
+ static UserModel empty() => UserModel(
+     id: '',
+     name: '',
+     username: '',
+     phoneNumber: '',
+     email: '',
+     profilePicture: '',
+     friends: []);
+
+
+ /// static function to JSON structure for storing data in firebase
+ Map<String, dynamic> toJson() {
+   return {
+     'Name': name,
+     'Username': username,
+     'Email': email,
+     'PhoneNumber': phoneNumber,
+     'ProfilePicture': profilePicture,
+     'friends': friends.map((friend) => {
+           'friendId': friend['friendId'],
+           'friendUsername': friend['friendUsername']
+         }).toList(),
+   };
+ }
+
+
+ /// Factory method to create a UserModel from a Firebase document snapshot
+ factory UserModel.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
+   final data = document.data()!;
+   List<Map<String, String>> friendsList = [];
+
+
+   if (data['friends'] != null) {
+     friendsList = List<Map<String, String>>.from(
+       (data['friends'] as List).map(
+         (item) => (item as Map).map(
+           (key, value) => MapEntry(key.toString(), value.toString())
+         )
+       )
+     );
+   }
+
+
+   return UserModel(
+     id: document.id,
+     name: data['Name'] ?? '',
+     username: data['Username'] ?? '',
+     phoneNumber: data['PhoneNumber'] ?? '',
+     email: data['Email'] ?? '',
+     profilePicture: data['ProfilePicture'] ?? '',
+     friends: friendsList,
+   );
+ }
 }
