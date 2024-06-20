@@ -10,26 +10,30 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+
 /// Repository class for user-related operations.
 class UserRepository extends GetxController {
-  static UserRepository get instance => Get.find();
+ static UserRepository get instance => Get.find();
 
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  /// Function to save user data to Firestore.
-  Future<void> saveUserRecord(UserModel user) async {
-    try {
-      await _db.collection("Users").doc(user.id).set(user.toJson());
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
-    } catch (e) {
-      throw 'Something went wrong. Please try again';
-    }
-  }
+ final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+
+ /// Function to save user data to Firestore.
+ Future<void> saveUserRecord(UserModel user) async {
+   try {
+     await _db.collection("Users").doc(user.id).set(user.toJson());
+   } on FirebaseException catch (e) {
+     throw TFirebaseException(e.code).message;
+   } on FormatException catch (_) {
+     throw const TFormatException();
+   } on PlatformException catch (e) {
+     throw TPlatformException(e.code).message;
+   } catch (e) {
+     throw 'Something went wrong. Please try again';
+   }
+ }
+
 
   /// Function to fetch user details based on user ID
   Future<UserModel> fetchUserDetails() async {
@@ -158,14 +162,28 @@ class UserRepository extends GetxController {
         'friendUsername': friendUsername,
       };
 
-      // Update the user's friends list to add the friend
-      await _db.collection('Users').doc(userId).update({
-        'friends': FieldValue.arrayUnion([friend]),
-      });
-    } catch (e) {
-      throw 'Failed to add friend: $e';
-    }
-  }
+
+   // Construct the friend object for the friend
+   Map<String, String> friendForFriend = {
+     'friendId': userId,
+     'friendUsername': currentUserUsername,
+   };
+
+
+   // Update the current user's friends list to add the friend
+   await _db.collection('Users').doc(userId).update({
+     'friends': FieldValue.arrayUnion([friendForCurrentUser]),
+   });
+
+
+   // Update the friend's friends list to add the current user
+   await _db.collection('Users').doc(friendId).update({
+     'friends': FieldValue.arrayUnion([friendForFriend]),
+   });
+ } catch (e) {
+   throw 'Failed to add friend: $e';
+ }
+}
 
   //Function to remove friend from user friends list
   Future<void> removeFriend(String userId, String friendId) async {

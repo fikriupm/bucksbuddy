@@ -1,52 +1,58 @@
 import 'package:bucks_buddy/utils/formatters/formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 /// Model class representing user data
 class UserModel {
-  // keep thosse values final which you do not want to update
-  final String id;
-  String name;
-  final String username;
-  String phoneNumber;
-  final String email;
-  String profilePicture;
-  List<Map<String, String>> friends;
+ // keep thosse values final which you do not want to update
+ final String id;
+ String name;
+ final String username;
+ String phoneNumber;
+ final String email;
+ String profilePicture;
+ List<Map<String, String>> friends;
 
-  //Constructor for UserModel
-  UserModel({
-    required this.id,
-    required this.name,
-    required this.username,
-    required this.phoneNumber,
-    required this.email,
-    required this.profilePicture,
-    this.friends = const [],
-  });
 
-  /// helper function to get the name
-  String get fullName => name;
+ //Constructor for UserModel
+ UserModel({
+   required this.id,
+   required this.name,
+   required this.username,
+   required this.phoneNumber,
+   required this.email,
+   required this.profilePicture,
+   this.friends = const [],
+ });
 
-  ///Helper function to format phoneNumber
-  String get formattedPhoneNo => TFormatter.formatPhoneNumber(phoneNumber);
 
-  ///Static function to generate a username from full name
-  static String generateUserName(String name) {
-    String camelCaseUsername = name
-        .replaceAll(' ', '')
-        .toLowerCase(); // Combine name and convert to lowercase
-    String usernameWithPrefix = "bb_$camelCaseUsername"; // Add "bb_" prefix
-    return usernameWithPrefix;
-  }
+ /// helper function to get the name
+ String get fullName => name;
 
-  /// static function to create an empty user model
-  static UserModel empty() => UserModel(
-      id: '',
-      name: '',
-      username: '',
-      phoneNumber: '',
-      email: '',
-      profilePicture: '',
-      friends: []);
+
+ ///Helper function to format phoneNumber
+ String get formattedPhoneNo => TFormatter.formatPhoneNumber(phoneNumber);
+
+
+ ///Static function to generate a username from full name
+ static String generateUserName(String name) {
+   String camelCaseUsername = name
+       .replaceAll(' ', '')
+       .toLowerCase(); // Combine name and convert to lowercase
+   String usernameWithPrefix = "bb_$camelCaseUsername"; // Add "bb_" prefix
+   return usernameWithPrefix;
+ }
+
+
+ /// static function to create an empty user model
+ static UserModel empty() => UserModel(
+     id: '',
+     name: '',
+     username: '',
+     phoneNumber: '',
+     email: '',
+     profilePicture: '',
+     friends: []);
 
   /// static function to JSON structure for storing data in firebase
   Map<String, dynamic> toJson() {
@@ -76,14 +82,17 @@ class UserModel {
               (key, value) => MapEntry(key.toString(), value.toString()))));
     }
 
-    return UserModel(
-      id: document.id,
-      name: data['Name'] ?? '',
-      username: data['Username'] ?? '',
-      phoneNumber: data['PhoneNumber'] ?? '',
-      email: data['Email'] ?? '',
-      profilePicture: data['ProfilePicture'] ?? '',
-      friends: friendsList,
-    );
-  }
+   return UserModel(
+     id: document.id,
+     name: data['Name'] ?? '',
+     username: data['Username'] ?? '',
+     phoneNumber: data['PhoneNumber'] ?? '',
+     email: data['Email'] ?? '',
+     profilePicture: data['ProfilePicture'] ?? '',
+     friends: friendsList,
+   );
+ }
 }
+
+
+

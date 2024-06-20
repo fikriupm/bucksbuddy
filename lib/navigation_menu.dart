@@ -7,8 +7,8 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:bucks_buddy/utils/constants/colors.dart';
 import 'package:bucks_buddy/utils/helpers/helper_functions.dart';
-
 import 'addFriendScreen.dart';
+
 
 class NavigationMenu extends StatelessWidget {
   const NavigationMenu({super.key});
@@ -53,6 +53,7 @@ class NavigationMenu extends StatelessWidget {
     );
   }
 }
+
 
 class NavigationController extends GetxController {
   final Rx<int> selectedIndex = 0.obs;
