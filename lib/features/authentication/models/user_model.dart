@@ -2,6 +2,7 @@ import 'package:bucks_buddy/utils/formatters/formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 
+
 /// Model class representing user data
 class UserModel {
  // keep thosse values final which you do not want to update
@@ -99,3 +100,6 @@ class UserModel {
    );
  }
 }
+
+
+

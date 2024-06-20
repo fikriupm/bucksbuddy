@@ -11,12 +11,13 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 
+
 /// Repository class for user-related operations.
 class UserRepository extends GetxController {
  static UserRepository get instance => Get.find();
 
-
  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
 
 
  /// Function to save user data to Firestore.
@@ -33,7 +34,6 @@ class UserRepository extends GetxController {
      throw 'Something went wrong. Please try again';
    }
  }
-
 
  /// Function to fetch user details based on user ID
  Future<UserModel> fetchUserDetails() async {
@@ -211,10 +211,6 @@ Future<void> removeFriend(String userId, String friendId, String friendUsername,
    throw 'Failed to remove friend: $e';
  }
 }
-
-
-
-
 
 
  //Function to retrieve current user's friends

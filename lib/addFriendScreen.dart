@@ -4,10 +4,12 @@ import 'package:bucks_buddy/data/repositories/user/user_repository.dart';
 import 'package:bucks_buddy/features/authentication/models/user_model.dart';
 
 
+
 class FriendScreen extends StatefulWidget {
  @override
  _FriendScreenState createState() => _FriendScreenState();
 }
+
 
 
 class _FriendScreenState extends State<FriendScreen> {
@@ -22,6 +24,8 @@ class _FriendScreenState extends State<FriendScreen> {
    super.initState();
    _fetchData();
  }
+
+ 
 
 
  Future<void> _fetchData() async {
@@ -41,11 +45,13 @@ class _FriendScreenState extends State<FriendScreen> {
  }
 
 
+
  void _updateNonFriendsList() {
    _nonFriends = _users.where((user) => !_currentUserFriends.contains(user.id)).toList();
    print('Non-friends: ${_nonFriends.map((u) => u.toJson()).toList()}');
    setState(() {});
  }
+
 
 
  @override
@@ -63,6 +69,13 @@ class _FriendScreenState extends State<FriendScreen> {
    );
  }
 
+
+ Widget _buildBody() {
+   if (_isLoading) {
+     return Center(
+       child: CircularProgressIndicator(),
+     );
+   }
 
  Widget _buildBody() {
    if (_isLoading) {
@@ -93,6 +106,45 @@ class _FriendScreenState extends State<FriendScreen> {
      );
    }
 
+   if (_users.isEmpty) {
+     return Center(
+       child: Column(
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: [
+           Text('No users found'),
+           SizedBox(height: 20),
+           Center(
+             child: Padding(
+               padding: const EdgeInsets.all(16.0),
+               child: Image.asset(
+                 'assets/logos/logo-main.png',
+                 height: 80,
+               ),
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+
+
+   return Column(
+     crossAxisAlignment: CrossAxisAlignment.start,
+     children: [
+       Center(
+         child: Padding(
+           padding: const EdgeInsets.all(16.0),
+           child: Image.asset(
+             'assets/logos/logo-main.png',
+             height: 80,
+           ),
+         ),
+       ),
+       _buildSection('Your Friends', _currentUserFriends, isFriendSection: true),
+       _buildSection('Add a new friend', _nonFriends, isFriendSection: false),
+     ],
+   );
+ }
 
    return Column(
      crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,8 +204,6 @@ class _FriendScreenState extends State<FriendScreen> {
 }
 
 
-
-
 Widget _buildFriendTile(String friendName, VoidCallback onPressed, {bool isAddButton = false}) {
  return ListTile(
    title: Text(friendName),
@@ -177,6 +227,7 @@ Widget _buildFriendTile(String friendName, VoidCallback onPressed, {bool isAddBu
          ),
  );
 }
+
 
 
  Future<void> _addFriend(String friendId, String friendName) async {
