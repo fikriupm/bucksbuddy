@@ -54,39 +54,35 @@ class UserModel {
      profilePicture: '',
      friends: []);
 
+  /// static function to JSON structure for storing data in firebase
+  Map<String, dynamic> toJson() {
+    return {
+      'Name': name,
+      'Username': username,
+      'Email': email,
+      'PhoneNumber': phoneNumber,
+      'ProfilePicture': profilePicture,
+      'friends': friends.map((friend) => {
+            'friendId': friend['friendId'],
+            'friendUsername': friend['friendUsername']
+          }).toList(),
+    };
+  }
 
- /// static function to JSON structure for storing data in firebase
- Map<String, dynamic> toJson() {
-   return {
-     'Name': name,
-     'Username': username,
-     'Email': email,
-     'PhoneNumber': phoneNumber,
-     'ProfilePicture': profilePicture,
-     'friends': friends.map((friend) => {
-           'friendId': friend['friendId'],
-           'friendUsername': friend['friendUsername']
-         }).toList(),
-   };
- }
+  /// Factory method to create a UserModel from a Firebase document snapshot
+  factory UserModel.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
+    final data = document.data()!;
+    List<Map<String, String>> friendsList = [];
 
-
- /// Factory method to create a UserModel from a Firebase document snapshot
- factory UserModel.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
-   final data = document.data()!;
-   List<Map<String, String>> friendsList = [];
-
-
-   if (data['friends'] != null) {
-     friendsList = List<Map<String, String>>.from(
-       (data['friends'] as List).map(
-         (item) => (item as Map).map(
-           (key, value) => MapEntry(key.toString(), value.toString())
-         )
-       )
-     );
-   }
-
+    if (data['friends'] != null) {
+      friendsList = List<Map<String, String>>.from(
+        (data['friends'] as List).map(
+          (item) => (item as Map).map(
+            (key, value) => MapEntry(key.toString(), value.toString())
+          )
+        )
+      );
+    }
 
    return UserModel(
      id: document.id,

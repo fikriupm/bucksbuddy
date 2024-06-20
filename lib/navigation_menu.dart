@@ -1,4 +1,3 @@
-import 'package:bucks_buddy/expenses.dart';
 import 'package:bucks_buddy/features/home/homepage.dart';
 import 'package:bucks_buddy/features/personalization/screens/settings/setting.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +5,6 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:bucks_buddy/utils/constants/colors.dart';
 import 'package:bucks_buddy/utils/helpers/helper_functions.dart';
-
-
 import 'addFriendScreen.dart';
 
 
@@ -30,10 +27,7 @@ class NavigationMenu extends StatelessWidget {
          onDestinationSelected: (index) {
            if (index == 1) {
              Get.to(() => FriendScreen());
-           } else if (index == 3) { // Navigate to Expenses screen
-              Get.to(() => Expenses());
-            }
-           else{
+           } else{
              controller.selectedIndex.value = index;
            }
          },
@@ -41,7 +35,7 @@ class NavigationMenu extends StatelessWidget {
          indicatorColor: darkMode ? TColors.white.withOpacity(0.1) : TColors.black.withOpacity(0.1),  
          destinations: const [
            NavigationDestination(icon: Icon(Iconsax.home), label: 'Home'),
-           NavigationDestination(icon: Icon(Iconsax.profile_2user), label: 'Friend'),
+          NavigationDestination(icon: Icon(Iconsax.profile_2user), label: 'Friend'),
            NavigationDestination(icon: Icon(Iconsax.empty_wallet), label: 'Expenses'),
            NavigationDestination(icon: Icon(Iconsax.user), label: 'Profile'),
          ],

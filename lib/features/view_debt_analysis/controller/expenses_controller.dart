@@ -1,20 +1,21 @@
-import 'package:bucks_buddy/expenses_model.dart';
+import 'package:bucks_buddy/features/personalization/controllers/user_controller.dart';
+import 'package:bucks_buddy/features/view_debt_analysis/model/expenses_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class ExpensesController extends GetxController {
   final FirebaseFirestore _firestore =
       FirebaseFirestore.instance; //initiate firebase connection
   final RxList<ExpensesModel> expenses = <ExpensesModel>[].obs;
+  UserController userController = Get.find();
 
   var selectedValue = 'Month'.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadExpenses();
   }
 
   @override
@@ -33,12 +34,17 @@ class ExpensesController extends GetxController {
     }
   }
 
-  Future<void> loadExpenses() async {
+  Future<void> loadExpenses(String user) async {
     try {
-      final snapshot = await _firestore.collection('expenses').get();
+      final snapshot = await _firestore
+          .collection('Users')
+          .doc(user)
+          .collection("Expenses")
+          .get();
       expenses.value = snapshot.docs
           .map((doc) => ExpensesModel.fromJson(doc.data()))
           .toList();
+      print(expenses.value);
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }
