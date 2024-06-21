@@ -6,6 +6,11 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:bucks_buddy/utils/constants/colors.dart';
 import 'package:bucks_buddy/utils/helpers/helper_functions.dart';
+<<<<<<< HEAD
+=======
+import 'addFriendScreen.dart';
+
+>>>>>>> master
 
 class NavigationMenu extends StatelessWidget {
   const NavigationMenu({super.key});
@@ -38,7 +43,11 @@ class NavigationMenu extends StatelessWidget {
 }
 
 
+<<<<<<< HEAD
 class NavigationController extends GetxController{
+=======
+class NavigationController extends GetxController {
+>>>>>>> master
   final Rx<int> selectedIndex = 0.obs;
 
   final screens = [const Homepage(), FriendScreen(), Container(color: Colors.orange), const SettingScreen(),];
