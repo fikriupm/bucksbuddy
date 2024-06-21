@@ -357,6 +357,29 @@ class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: TSizes.spaceBtwSections),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Payment Amount',
+                      style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: TSizes.fontSizeSm + 2),
+                    ),
+                    Text(
+                      paymentController.amount.value,
+                      // ignore: prefer_const_constructors
+                      style: TextStyle(
+                          color: Colors.red,
+                          fontSize: TSizes.fontSizeLg + 2,
+                          fontWeight: FontWeight.w600),
+                    )
+                  ],
+                ),
+              ),
             ],
           ),
         ),

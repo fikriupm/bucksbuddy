@@ -1,14 +1,12 @@
+import 'package:bucks_buddy/addFriendScreen.dart';
 import 'package:bucks_buddy/features/home/homepage.dart';
-import 'package:bucks_buddy/features/personalization/screens/profile/profile.dart';
 import 'package:bucks_buddy/features/personalization/screens/settings/setting.dart';
-//import 'package:bucks_buddy/features/view_debt_analysis/screen/expenses/expenses.dart';
+import 'package:bucks_buddy/features/view_debt_analysis/screen/expenses/expenses.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:bucks_buddy/utils/constants/colors.dart';
 import 'package:bucks_buddy/utils/helpers/helper_functions.dart';
-
-import 'addFriendScreen.dart';
 
 class NavigationMenu extends StatelessWidget {
   const NavigationMenu({super.key});
@@ -24,15 +22,8 @@ class NavigationMenu extends StatelessWidget {
           height: 70,
           elevation: 0,
           selectedIndex: controller.selectedIndex.value,
-          onDestinationSelected: (index) {
-            if (index == 1) {
-              Get.to(() => FriendScreen());
-            } else if (index == 2) {
-              //Get.to(Expenses());
-            } else if (index == 3) {
-              Get.to(const ProfileScreen());
-            }
-          },
+          onDestinationSelected: (index) =>
+              controller.selectedIndex.value = index,
           backgroundColor: darkMode
               ? TColors.black
               : const Color.fromARGB(255, 218, 202, 83),
@@ -59,7 +50,8 @@ class NavigationController extends GetxController {
 
   final screens = [
     const Homepage(),
-    Container(color: Colors.orange),
+    FriendScreen(),
+    Expenses(),
     const SettingScreen(),
   ];
 }
