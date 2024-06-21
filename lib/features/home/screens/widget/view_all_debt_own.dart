@@ -1,5 +1,6 @@
 import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/displayForm.dart';
+import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_to_pay.dart';
 import 'package:flutter/material.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:get/get.dart';
@@ -7,7 +8,8 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart'; // For formatting date and time
 
 class ViewAllDebtOwnScreen extends StatelessWidget {
-  final DebtTicketController _debtTicketController = Get.put(DebtTicketController());
+  final DebtTicketController _debtTicketController =
+      Get.put(DebtTicketController());
   final String debtorUsername;
 
   ViewAllDebtOwnScreen({required this.debtorUsername});
@@ -62,22 +64,24 @@ class ViewAllDebtOwnScreen extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) => DisplayForm(debtTicket: ticket),
-                              //   ),
-                              // );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DebtTicketToPay(
+                                      debtTicketId: ticket.debtTicketId),
+                                ),
+                              );
                             },
                             child: Text('Details >'),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color.fromARGB(255, 253, 253, 253),
+                              foregroundColor:
+                                  const Color.fromARGB(255, 253, 253, 253),
                             ),
                           ),
                         ],
                       ),
                       Text(
-                        'To: ${ticket.debtor}',
+                        'From: ${ticket.creditor}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
@@ -98,7 +102,8 @@ class ViewAllDebtOwnScreen extends StatelessWidget {
                                 Icon(Icons.calendar_month, size: 20),
                                 SizedBox(width: 5),
                                 Text(
-                                  DateFormat.yMd().format(DateTime.parse(ticket.dateTime)), // Format the date
+                                  DateFormat.yMd().format(DateTime.parse(
+                                      ticket.dateTime)), // Format the date
                                   style: TextStyle(fontSize: 16),
                                 ),
                               ],
@@ -111,7 +116,8 @@ class ViewAllDebtOwnScreen extends StatelessWidget {
                                 Icon(Icons.access_time, size: 20),
                                 SizedBox(width: 5),
                                 Text(
-                                  DateFormat.Hms().format(DateTime.parse(ticket.dateTime)), // Format the time
+                                  DateFormat.Hms().format(DateTime.parse(
+                                      ticket.dateTime)), // Format the time
                                   style: TextStyle(fontSize: 16),
                                 ),
                               ],

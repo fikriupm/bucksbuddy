@@ -1,9 +1,9 @@
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
+import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_created.dart';
 import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_ticket.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:bucks_buddy/utils/constants/image_strings.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:intl/intl.dart';
 
@@ -100,7 +100,13 @@ class RecentDebtSection extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {
-                              // Handle tapping on a debt ticket if needed
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DebtTicketTCreated(
+                                      debtTicketId: ticket.debtTicketId),
+                                ),
+                              );
                             },
                             child: Text('Details >'),
                             style: TextButton.styleFrom(

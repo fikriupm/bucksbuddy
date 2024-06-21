@@ -1,3 +1,4 @@
+import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_created.dart';
 import 'package:flutter/material.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
@@ -17,7 +18,7 @@ class ViewAllDebtTicketsScreen extends StatelessWidget {
         title: Text('All Debt Tickets'),
       ),
       body: FutureBuilder<List<DebtTicket>>(
-        future: _fetchDebtTickets(),
+        future: _debtTicketController.fetchDebtTickets(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -61,7 +62,13 @@ class ViewAllDebtTicketsScreen extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {
-                              // Handle tapping on a debt ticket if needed
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DebtTicketTCreated(
+                                      debtTicketId: ticket.debtTicketId),
+                                ),
+                              );
                             },
                             child: Text('Details >'),
                             style: TextButton.styleFrom(
@@ -125,27 +132,5 @@ class ViewAllDebtTicketsScreen extends StatelessWidget {
         },
       ),
     );
-  }
-
-  Future<List<DebtTicket>> _fetchDebtTickets() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(user.uid)
-            .collection('DebtTickets')
-            .get();
-
-        return querySnapshot.docs
-            .map((doc) =>
-                DebtTicket.fromJson(doc.data() as Map<String, dynamic>))
-            .toList();
-      } else {
-        throw Exception('User is not authenticated.');
-      }
-    } catch (e) {
-      throw Exception('Error fetching all debt tickets: $e');
-    }
   }
 }

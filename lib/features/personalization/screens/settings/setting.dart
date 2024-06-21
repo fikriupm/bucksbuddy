@@ -60,7 +60,7 @@ class SettingScreen extends StatelessWidget {
 
                   TSettingsMenuTile(
                     icon: Iconsax.bank,
-                    title: 'Bank  Hanan Account',
+                    title: 'Bank Account',
                     subTitle: 'Registered Account for Transaction',
                     onTap: () => Get.to(() => const TransactionAccountScreen()),
                   ),
