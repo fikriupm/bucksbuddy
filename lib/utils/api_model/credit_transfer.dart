@@ -10,7 +10,15 @@ import 'package:intl/intl.dart';
 class CreditTransfer {
   String creditorName;
   String creditorAccount;
-  CreditTransfer({required this.creditorAccount, required this.creditorName});
+  String amount;
+  String debtorName;
+  String bankAccount;
+  CreditTransfer(
+      {required this.creditorAccount,
+      required this.creditorName,
+      required this.amount,
+      required this.debtorName,
+      required this.bankAccount});
 
   PaymentController paymentController = Get.find();
   static const String host =
@@ -36,7 +44,7 @@ class CreditTransfer {
 
 // get dynamic authentication
   Future<String> getJwsToken(String businessMessageId, String creditorName,
-      String creditorAccount) async {
+      String creditorAccount, String amount, String debtorName) async {
     final url =
         '$host/test/helper/jws-token?businessMessageId=$businessMessageId';
     final headers = {'Content-Type': 'application/json'};
@@ -46,8 +54,8 @@ class CreditTransfer {
         "data": {
           "businessMessageId": businessMessageId,
           "createdDateTime": createdDateTime,
-          "interbankSettlementAmount": 1.00,
-          "debtor": {"name": "Debtor Name", "id": '0123456789'},
+          "interbankSettlementAmount": amount,
+          "debtor": {"name": debtorName, "id": '0123456789'},
           "debtorAccount": {
             "id": '0123456789',
             "type": "SVGS",
@@ -88,8 +96,8 @@ class CreditTransfer {
       var businessMessageId = await getBusinessMessageId();
 
       // Get jwsToken
-      var jwsToken =
-          await getJwsToken(businessMessageId, creditorName, creditorAccount);
+      var jwsToken = await getJwsToken(
+          businessMessageId, creditorName, creditorAccount, amount, debtorName);
 
       // Prepare headers
       Map<String, String> headers = {
@@ -106,8 +114,8 @@ class CreditTransfer {
         "data": {
           "businessMessageId": businessMessageId,
           "createdDateTime": createdDateTime,
-          "interbankSettlementAmount": 1.00,
-          "debtor": {'name': "Debtor Name", "id": '0123456789'},
+          "interbankSettlementAmount": amount,
+          "debtor": {'name': debtorName, "id": '0123456789'},
           "debtorAccount": {
             "id": '0123456789',
             "type": "SVGS",
@@ -141,10 +149,13 @@ class CreditTransfer {
         print('Success: ${response.body}');
         Get.snackbar(
           'Payment Successful',
-          'RM  is successful deducted from account $creditorAccount',
+          'RM $amount successful deducted from $bankAccount ($creditorAccount) to $debtorName',
           //nnti tukar gambar yg sesuai
-          icon: const Image(
-            image: AssetImage(TImages.duitnow),
+          icon: const Padding(
+            padding: EdgeInsets.only(top: 15.0, left: 8.0),
+            child: Image(
+              image: AssetImage(TImages.duitnow),
+            ),
           ),
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.grey.withOpacity(0.7),
@@ -160,17 +171,17 @@ class CreditTransfer {
         print('Response Body: ${response.body}');
         Get.snackbar(
           'Failed',
-          'RM  is failed to deducted from account $creditorAccount',
+          'RM $amount failed to deducted from $bankAccount ($creditorAccount) to $debtorName',
           //nnti tukar gambar yg sesuai
           icon: const Image(
-            image: AssetImage('assets/images/duitnow.png'),
+            image: AssetImage(TImages.duitnow),
           ),
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red.withOpacity(0.5),
           borderRadius: 20,
           margin: const EdgeInsets.all(15),
           colorText: Colors.white,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 2),
           isDismissible: true,
           forwardAnimationCurve: Curves.easeOutBack,
         );

@@ -1,4 +1,9 @@
+import 'dart:math';
+
+import 'package:bucks_buddy/features/payment/models/payment_model.dart';
+import 'package:bucks_buddy/features/payment/screen/approval_screen.dart';
 import 'package:bucks_buddy/features/payment/screen/payment_amount_screen.dart';
+import 'package:bucks_buddy/features/payment/screen/payment_success_screen.dart';
 import 'package:bucks_buddy/features/payment/screen/recipient_reference_screen.dart';
 import 'package:bucks_buddy/utils/api_model/credit_transfer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,10 +23,18 @@ class PaymentController extends GetxController {
       Rx<DocumentSnapshot<Map<String, dynamic>>?>(null);
   Rx<DocumentSnapshot<Map<String, dynamic>>?> creditorBankDetails =
       Rx<DocumentSnapshot<Map<String, dynamic>>?>(null);
-  String? uid;
-  String amount = '';
-  String creditorName = '';
-  String creditorAccount = '';
+  RxList<PaymentModel> paymentModel = <PaymentModel>[].obs;
+
+  String? debtoruid;
+  var amount = ''.obs;
+  var creditorName = ''.obs;
+  var creditorAccount = ''.obs;
+  var debtorName = ''.obs;
+  var bankAccount = ''.obs;
+  var debtTicketId = ''.obs;
+  var category = ''.obs;
+  var paymentId = ''.obs;
+  var date = ''.obs;
 
   //payment amount screen
   Rx<String> responseMessage = ''.obs;
@@ -32,8 +45,11 @@ class PaymentController extends GetxController {
   //recipient_reference_screen
   TextEditingController recipientReferenceInput = TextEditingController();
   TextEditingController recipientOptionalInput = TextEditingController();
-  var _dateTime = ''.obs;
   var choiceSelected = ''.obs;
+
+  //paymentSuccessScreen
+  Rx<String> successfulFetchPayment = ''.obs;
+
   //aproval screen
 
   @override
@@ -41,6 +57,7 @@ class PaymentController extends GetxController {
     super.onInit();
     fetchDebtTicket();
     fetchCreditorBanksDetails();
+    generatePaymentId();
   }
 
   void fetchDebtTicket() async {
@@ -65,8 +82,12 @@ class PaymentController extends GetxController {
           fetchDebtorDetails(snapshot['debtor']);
           paymentAmountInput(snapshot['amount']);
           actualAmount(snapshot['amount']);
-          creditorAccount = snapshot['bankAccountNumber'];
-          creditorName = snapshot['creditor'];
+          creditorAccount.value = snapshot['bankAccountNumber'];
+          creditorName.value = snapshot['creditor'];
+          amount.value = snapshot['amount'];
+          debtorName.value = snapshot['debtor'];
+          bankAccount.value = snapshot['bankAccount'];
+          debtTicketId.value = snapshot.id;
         } else {
           debtTicket.value = null;
           print('Document does not exist');
@@ -88,9 +109,9 @@ class PaymentController extends GetxController {
 
       // Step 5: Iterate through each document in the user snapshot
       if (userSnapshot.docs.isNotEmpty) {
-        uid = userSnapshot.docs.first.id;
+        debtoruid = userSnapshot.docs.first.id;
         // print(uid);
-        fetchDebtorBanksDetails(uid!);
+        fetchDebtorBanksDetails(debtoruid!);
 
         user.value =
             userSnapshot.docs.first as DocumentSnapshot<Map<String, dynamic>>?;
@@ -157,7 +178,7 @@ class PaymentController extends GetxController {
 
     double? errorValue = double.tryParse(value);
     double? paymentInput = paymentAmountInput(value);
-    double? actual = actualAmount(amount);
+    double? actual = actualAmount(amount.value);
 
     if (errorValue == null || paymentInput == null || actual == null) {
       paymentAmountError.value = 'Invalid amount or payment value';
@@ -175,9 +196,9 @@ class PaymentController extends GetxController {
   }
 
   actualAmount(String value) {
-    amount = value;
-    print(amount);
-    return double.tryParse(amount);
+    amount.value = value;
+    print(amount.value);
+    return double.tryParse(amount.value);
   }
 
   paymentAmountInput(String value) {
@@ -204,31 +225,105 @@ class PaymentController extends GetxController {
 // get current date
   String currentDate() {
     DateTime now = DateTime.now();
-    _dateTime.value = DateFormat('yyyy-MM-dd - kk:mm').format(now);
-    print(_dateTime.value);
-    return _dateTime.value;
+    date.value = DateFormat('yyyy-MM-dd - kk:mm').format(now);
+    print(date.value);
+    return date.value;
   }
 
   void choiceChipSelected(String value) {
     choiceSelected.value = value;
-    // if (choiceSelected.value == 'Food') {
-    //   print('food');
-    // } else if (choiceSelected.value == 'Personal') {
-    //   print('Personal');
-    // } else if (choiceSelected.value == 'Other') {
-    //   print('Other');
-    // } else {
-    //   print('Error');
-    // }
+    category.value = value;
   }
 
 //approval screen
 
 // start credit transfer api
   void creditTransferApi() {
-    CreditTransfer creditTransfer = CreditTransfer(
-        creditorAccount: creditorAccount, creditorName: creditorName);
-    creditTransfer.sendPostRequest();
+    try {
+      CreditTransfer creditTransfer = CreditTransfer(
+          creditorAccount: creditorAccount.string,
+          creditorName: creditorName.string,
+          amount: amount.string,
+          debtorName: debtorName.string,
+          bankAccount: bankAccount.string);
+      creditTransfer.sendPostRequest();
+    } catch (e) {
+      Get.snackbar('error api', e.toString());
+    }
+  }
+
+//create payment doc
+  Future<void> addPaymentDetails() async {
+    var createdDateTime =
+        DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(DateTime.now());
+    double parsedAmount = double.tryParse(amount.value) ?? 0.0;
+    var paymentInstances = PaymentModel(
+      amount: parsedAmount,
+      creditorUserId: creditorName.value,
+      date: createdDateTime,
+      debtTicketId: debtTicketId.value,
+      debtorUserId: debtorName.value,
+      paymentId: paymentId.value,
+      references: recipientReferenceInput.text,
+      optionalrReferences: recipientOptionalInput.text,
+      category: category.value,
+    );
+
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String uid = user.uid;
+
+        if (choiceSelected.value == 'Food') {
+          await _firestore
+              .collection('Users')
+              .doc(uid)
+              .collection('Payment')
+              .doc(uid)
+              .collection('Food')
+              .add(paymentInstances.toJson());
+          Get.snackbar('Success', 'Payment added to Food to Firebase');
+        } else if (choiceSelected.value == 'Personal') {
+          await _firestore
+              .collection('Users')
+              .doc(uid)
+              .collection('Payment')
+              .doc(uid)
+              .collection('Personal')
+              .add(paymentInstances.toJson());
+          Get.snackbar('Success', 'Payment added to Personal in Firebase');
+        } else if (choiceSelected.value == 'Other') {
+          await _firestore
+              .collection('Users')
+              .doc(uid)
+              .collection('Payment')
+              .doc(uid)
+              .collection('Other')
+              .add(paymentInstances.toJson());
+          Get.snackbar('Success', 'Payment added to Other in Firebase');
+        } else {
+          Get.snackbar('Error', 'Invalid payment category selected');
+          return;
+        }
+
+        // Add the payment instance to the local model and show success message
+        paymentModel.add(paymentInstances);
+        successfulFetchPayment.value = 'Success';
+      } else {
+        Get.snackbar('Error', 'User is not authenticated');
+        successfulFetchPayment.value = 'Failed';
+      }
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    }
+  }
+
+  //generatedPaymentId
+  void generatePaymentId() {
+    Random random = Random();
+    var randomId = (random.nextInt(90000) + 10000).toString();
+    paymentId.value = randomId.toString();
+    print(paymentId.value);
   }
 
   void nextPagePaymentAmountScreen() {
@@ -237,5 +332,13 @@ class PaymentController extends GetxController {
 
   void nextPageRecipientReferenceScreen() {
     Get.to(RecipientReferenceScreen());
+  }
+
+  void nextPagePaymentSuccessScreen() {
+    Get.to(PaymentSuccessScreen());
+  }
+
+  void nextPageApprovalScreen() {
+    Get.to(ApprovalScreen());
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
+import 'package:bucks_buddy/features/payment/screen/payment_success_screen.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:bucks_buddy/utils/device/device_utility.dart';
 import 'package:flutter/material.dart';
@@ -126,7 +127,7 @@ class ApprovalScreen extends StatelessWidget {
                 try {
                   //kt sini bru updated to firebase
                   paymentController.creditTransferApi();
-                  //Get.to(PaymentSuccessScreen());
+                  Get.to(PaymentSuccessScreen());
                   //Get.snackbar('title', amount.toString());
                 } catch (e) {
                   Get.snackbar('Error', e.toString());
