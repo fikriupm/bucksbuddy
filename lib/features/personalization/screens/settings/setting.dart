@@ -28,7 +28,7 @@ class SettingScreen extends StatelessWidget {
                 /// Appbar
                 TAppBar(
                   title: Text(
-                    'Account',
+                    'Profile',
                     style: Theme.of(context)
                         .textTheme
                         .headlineMedium!

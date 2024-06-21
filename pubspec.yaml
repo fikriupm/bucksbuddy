@@ -45,7 +45,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   sign_in_button: ^3.0.0
   # State Management
-  get: ^4.6.5
+  get: ^4.6.6
   get_storage: ^2.1.1
   # Product Specific
   readmore: ^3.0.0
@@ -67,6 +67,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   permission_handler: ^11.3.1
   fl_chart: ^0.68.0
+  timezone: ^0.9.3
 
 
 

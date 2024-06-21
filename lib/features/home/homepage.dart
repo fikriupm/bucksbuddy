@@ -37,7 +37,6 @@ class Homepage extends StatelessWidget {
               QuickActionSection(),
               SizedBox(height: TSizes.sm),
               
-              // under quick_action_section class
               QuickActionIcon(),
               SizedBox(height: TSizes.sm),
               QuickActionText(),
