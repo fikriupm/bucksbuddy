@@ -1,4 +1,3 @@
-// debt_ticket_model.dart
 class DebtTicket {
   final String creditor;
   final String debtor;
@@ -9,7 +8,7 @@ class DebtTicket {
   final String reference;
   final String dateTime;
   final String status;
-  // final String debtTicketId;
+  final String debtTicketId;
 
   DebtTicket({
     required this.creditor,
@@ -21,7 +20,7 @@ class DebtTicket {
     required this.reference,
     required this.dateTime,
     required this.status,
-    // required this.debtTicketId
+    required this.debtTicketId,
   });
 
   Map<String, dynamic> toJson() {
@@ -35,7 +34,7 @@ class DebtTicket {
       'reference': reference,
       'dateTime': dateTime,
       'status': status,
-      //'debtTicketId': debtTicketId
+      'debtTicketId': debtTicketId,
     };
   }
 
@@ -50,7 +49,7 @@ class DebtTicket {
       reference: json["reference"] as String? ?? '',
       dateTime: json['dateTime'] as String? ?? '',
       status: json['status'] as String? ?? '',
-      // debtTicketId: json['debtTicketId']
+      debtTicketId: json['debtTicketId'] as String? ?? '',
     );
   }
 }

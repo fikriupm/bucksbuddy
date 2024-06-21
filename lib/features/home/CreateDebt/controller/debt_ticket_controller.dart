@@ -6,6 +6,7 @@ import 'package:bucks_buddy/features/home/homepage.dart';
 import 'package:bucks_buddy/features/personalization/controllers/user_controller.dart';
 import 'package:bucks_buddy/features/personalization/controllers/bank_account_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -66,25 +67,6 @@ class DebtTicketController extends GetxController {
     }
   }
 
-  Future<DebtTicket?> fetchDebtTicket(String username, String ticketId) async {
-    try {
-      final docSnapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(username)
-          .collection('DebtTickets')
-          .doc(ticketId)
-          .get();
-
-      if (docSnapshot.exists) {
-        return DebtTicket.fromJson(docSnapshot.data()!);
-      } else {
-        return null; // Ticket not found
-      }
-    } catch (e) {
-      throw Exception('Error fetching debt ticket: $e');
-    }
-  }
-
   void navigateToHomePage(BuildContext context) {
     Navigator.pushAndRemoveUntil(
       context,
@@ -94,9 +76,136 @@ class DebtTicketController extends GetxController {
     );
   }
 
-  String generatedTicketId() {
-    Random random = Random();
-    var ticketId = 'TICKET ID: ${random.nextInt(1000)}';
-    return ticketId;
+  String generateTicketId() {
+    return 'BBDT${DateTime.now().millisecondsSinceEpoch}';
+  }
+
+  Future<String> fetchCurrentUsername() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(user.uid)
+            .get();
+        if (userDoc.exists) {
+          return userDoc['Username'] as String;
+        } else {
+          throw Exception('User document does not exist.');
+        }
+      } else {
+        throw Exception('User is not authenticated.');
+      }
+    } catch (e) {
+      throw Exception('Error fetching username: $e');
+    }
+  }
+Future<List<DebtTicket>> fetchDebtTicketsOwn(String debtorUsername) async {
+    String debtorYouOwn = debtorUsername;
+    List<DebtTicket> debtTickets = [];
+
+    try {
+      // Retrieve all user documents from the 'Users' collection
+      QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+          await FirebaseFirestore.instance.collection('Users').get();
+
+      // Iterate through each user document
+      for (var userDoc in usersSnapshot.docs) {
+        String userId = userDoc.id;
+
+        // Query the 'DebtTickets' subcollection for the current user
+        QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
+            await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(userId)
+                .collection('DebtTickets')
+                .where('debtor', isEqualTo: debtorYouOwn)
+                .get();
+
+        // Check if there are any matching documents
+        if (debtTicketsSnapshot.docs.isNotEmpty) {
+          print('Successfully completed for user: $userId');
+          for (var docSnapshot in debtTicketsSnapshot.docs) {
+            Map<String, dynamic> data = docSnapshot.data();
+
+            // Map data to DebtTicket model
+            DebtTicket ticket = DebtTicket.fromJson(data);
+            debtTickets.add(ticket);
+
+            print('Document ID: ${docSnapshot.id}');
+            print('Creditor: ${ticket.creditor}');
+            print('Amount $debtorYouOwn owes to ${ticket.creditor}: ${ticket.amount}');
+          }
+        } else {
+          print('No documents found matching the query for user: $userId');
+        }
+      }
+
+      return debtTickets;
+    } catch (e) {
+      print('Error fetching all debt tickets: $e');
+      throw Exception('Error fetching all debt tickets: $e');
+    }
+  }
+
+
+  //   try {
+  //     User? user = FirebaseAuth.instance.currentUser;
+  //     if (user != null) {
+  //       await fetchAllDebtTickets(user.uid);
+
+  //       print(
+  //           'Fetching debt tickets for user ID: ${user.uid} and debtor: $debtorUsername');
+
+  //       // Query directly to DebtTickets collection
+  //       QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
+  //           await FirebaseFirestore.instance
+  //               .collection('Users')
+  //               .doc(user.uid)
+  //               .collection('DebtTickets')
+  //               .where('debtor', isEqualTo: debtorUsername)
+  //               .get();
+
+
+  //       print('Fetched ${debtTicketsSnapshot.docs.length} debt tickets');
+
+  //       // Print each fetched document for debugging
+  //     // Print each fetched document for debugging
+  //     for (var doc in debtTicketsSnapshot.docs) {
+  //       print('Fetched debt ticket: ${doc.data()}');
+  //     }
+
+  //     // Map the documents to DebtTicket objects and return the list
+  //     List<DebtTicket> debtTickets = debtTicketsSnapshot.docs
+  //         .map((doc) => DebtTicket.fromJson(doc.data() as Map<String, dynamic>))
+  //         .toList();
+
+  //     print('Mapped debt tickets: $debtTickets');
+
+  //     return debtTickets;
+  //   } else {
+  //     throw Exception('User is not authenticated.');
+  //   }
+  // } catch (e) {
+  //   print('Error fetching all debt tickets: $e');
+  //   throw Exception('Error fetching all debt tickets: $e');
+  // }
+
+  Future<void> fetchAllDebtTickets(String userId) async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> allDebtTicketsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(userId)
+              .collection('DebtTickets')
+              .get();
+
+      print('All debt tickets for user ID: $userId');
+      for (var doc in allDebtTicketsSnapshot.docs) {
+        print(doc.data());
+      }
+    } catch (e) {
+      print('Error fetching all debt tickets: $e');
+    }
   }
 }
