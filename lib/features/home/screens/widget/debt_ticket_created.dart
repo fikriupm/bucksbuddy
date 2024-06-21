@@ -4,10 +4,10 @@ import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_cont
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:get/get.dart';
 
-class DebtTicketToPay extends StatelessWidget {
+class DebtTicketTCreated extends StatelessWidget {
   final String debtTicketId;
 
-  DebtTicketToPay({required this.debtTicketId});
+  DebtTicketTCreated({required this.debtTicketId});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class DebtTicketToPay extends StatelessWidget {
         centerTitle: true,
       ),
       body: FutureBuilder<DebtTicket?>(
-        future: _debtTicketController.fetchDebtTickeToPaytById(debtTicketId),
+        future: _debtTicketController.fetchDebtTickeCreatedtById(debtTicketId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -112,24 +112,6 @@ class DebtTicketToPay extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 24.0),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle payment action here
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      backgroundColor: Color.fromARGB(236, 220, 199, 10),
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                    child: Text(
-                      'Proceed to Pay',
-                      style: TextStyle(fontSize: 16.0),
                     ),
                   ),
                 ],
