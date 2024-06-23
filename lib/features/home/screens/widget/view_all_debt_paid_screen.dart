@@ -6,16 +6,16 @@ import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dar
 import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_created.dart';
 import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_to_pay.dart';
 
-class ViewAllDebtTicketsScreen extends StatefulWidget {
+class ViewAllDebtTicketsPaidScreen extends StatefulWidget {
   final String debtorUsername;
 
-  ViewAllDebtTicketsScreen({required this.debtorUsername});
+  ViewAllDebtTicketsPaidScreen({required this.debtorUsername});
 
   @override
-  _ViewAllDebtTicketsScreenState createState() => _ViewAllDebtTicketsScreenState();
+  _ViewAllDebtTicketsPaidScreenState createState() => _ViewAllDebtTicketsPaidScreenState();
 }
 
-class _ViewAllDebtTicketsScreenState extends State<ViewAllDebtTicketsScreen> {
+class _ViewAllDebtTicketsPaidScreenState extends State<ViewAllDebtTicketsPaidScreen> {
   final DebtTicketController _debtTicketController = Get.put(DebtTicketController());
   bool _showOwnYou = true;
   late Future<List<DebtTicket>> _debtTicketsFuture;
@@ -26,15 +26,15 @@ class _ViewAllDebtTicketsScreenState extends State<ViewAllDebtTicketsScreen> {
   void initState() {
     super.initState();
     _debtorUsername = _debtTicketController.debtorUsername.value;
-    _debtTicketsFuture = _debtTicketController.fetchDebtTickets();
-    _debtTicketsOwnFuture = _debtTicketController.fetchDebtTicketsOwn(_debtorUsername);
+    _debtTicketsFuture = _debtTicketController.viewDebtTicketPaid();
+    _debtTicketsOwnFuture = _debtTicketController.viewDebtTicketUOwePaid(_debtorUsername);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Debt Tickets'),
+        title: const Text('Debt Tickets Settled'),
       ),
       body: Column(
         children: [
@@ -48,8 +48,7 @@ class _ViewAllDebtTicketsScreenState extends State<ViewAllDebtTicketsScreen> {
       ),
     );
   }
-
-  Widget _buildToggleButtons() {
+    Widget _buildToggleButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

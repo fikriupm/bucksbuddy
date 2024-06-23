@@ -15,7 +15,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UserController extends GetxController {
-  static UserController get instance => Get.find();
+  static UserController get instance => Get.put(UserController());
 
   final profileLoading = false.obs;
   Rx<UserModel> user = UserModel.empty().obs;

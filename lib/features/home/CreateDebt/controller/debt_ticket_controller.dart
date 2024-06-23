@@ -15,6 +15,7 @@ class DebtTicketController extends GetxController {
   final BankAccountController bankAccountController =
       BankAccountController.instance;
   var isPaid = true.obs;
+  var debtorUsername = ''.obs;
 
   @override
   void initState() {
