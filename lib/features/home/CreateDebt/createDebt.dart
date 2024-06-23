@@ -66,42 +66,39 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
   }
 
   void _submitForm() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final debtorExists =
-          await debtTicketController.doesDebtorExist(_debtorController.text);
+  if (_formKey.currentState?.validate() ?? false) {
+    final debtorExists =
+        await debtTicketController.doesDebtorExist(_debtorController.text);
 
-      if (!debtorExists) {
-        _showErrorDialog('The debtor does not exist.');
-        return;
-      }
-
-      final ticketData = DebtTicket(
-        creditor: _creditorController.text,
-        debtor: _debtorController.text,
-        amount: _amountController.text,
-        bankAccount: _bankAccountController.text,
-        bankAccountNumber: _bankAccountNoController.text,
-        reference: _referenceController.text,
-        phoneNumber: _phoneNumController.text,
-        dateTime: DateTime.now().toString(),
-        status: 'not_paid',
-        //debtTicketId: debtTicketController.generatedTicketId()
-      );
-
-      await debtTicketController.saveDebtTicket(
-          ticketData, _creditorIDController.text);
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DisplayForm(
-            ticketData: ticketData.toJson(),
-            id: _creditorIDController.text,
-          ),
-        ),
-      );
+    if (!debtorExists) {
+      _showErrorDialog('The debtor does not exist.');
+      return;
     }
+
+    final ticketData = DebtTicket(
+      creditor: _creditorController.text,
+      debtor: _debtorController.text,
+      amount: _amountController.text,
+      bankAccount: _bankAccountController.text,
+      bankAccountNumber: _bankAccountNoController.text,
+      reference: _referenceController.text,
+      phoneNumber: _phoneNumController.text,
+      dateTime: DateTime.now().toString(),
+      status: 'not_paid',
+      debtTicketId: debtTicketController.generateTicketId(), // Add this line
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DisplayForm(
+          ticketData: ticketData.toJson(),
+          id: _creditorIDController.text,
+        ),
+      ),
+    );
   }
+}
 
   void _showErrorDialog(String message) {
     showDialog(

@@ -1,7 +1,5 @@
 import 'package:bucks_buddy/common/styles/spacing_styles.dart';
-import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
-import 'package:bucks_buddy/utils/constants/colors.dart';
 import 'package:bucks_buddy/utils/constants/image_strings.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:bucks_buddy/utils/device/device_utility.dart';
@@ -18,6 +16,13 @@ class PaymentAmountScreen extends StatefulWidget {
 
 class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
   final PaymentController paymentController = Get.put(PaymentController());
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch debtor details in initState to avoid build phase issues
+    paymentController.fetchDebtorDetails();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,86 +118,10 @@ class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    height: 50,
-                    width: 70,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        paymentController.paymentAmount.text = '20';
-                        paymentController.errorText('20');
-                      },
-                      child: const Text(
-                        "20",
-                        style:
-                            TextStyle(fontSize: TSizes.lg, color: Colors.black),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: 50,
-                    width: 70,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        paymentController.paymentAmount.text = '30';
-                        paymentController.errorText('30');
-                      },
-                      child: const Text(
-                        "30",
-                        style:
-                            TextStyle(fontSize: TSizes.lg, color: Colors.black),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: 50,
-                    width: 70,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        paymentController.paymentAmount.text = '40';
-                        paymentController.errorText('40');
-                      },
-                      child: const Text(
-                        "40",
-                        style:
-                            TextStyle(fontSize: TSizes.lg, color: Colors.black),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: 50,
-                    width: 70,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        paymentController.paymentAmount.text = '50';
-                        paymentController.errorText('50');
-                      },
-                      child: const Text(
-                        "50",
-                        style:
-                            TextStyle(fontSize: TSizes.lg, color: Colors.black),
-                      ),
-                    ),
-                  ),
+                  _buildAmountButton(paymentController, '20'),
+                  _buildAmountButton(paymentController, '30'),
+                  _buildAmountButton(paymentController, '40'),
+                  _buildAmountButton(paymentController, '50'),
                 ],
               ),
               SizedBox(height: TDeviceUtils.getScreenHeight() * 0.1),
@@ -262,16 +191,10 @@ class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
                                     if (paymentController
                                             .selectedMethod.value ==
                                         'Bank Account') {
-                                      //check balik database dri mane nk ambek account bank
-                                      final user = paymentController.user.value;
-                                      var creditorBankDetails =
-                                          paymentController
-                                              .creditorBankDetails.value;
+                                      var debtorBankDetails = paymentController
+                                          .debtorBankDetails.value;
 
-                                      if (user != null) {
-                                        print(
-                                            '${creditorBankDetails?['AccountNumber']}');
-
+                                      if (debtorBankDetails != null) {
                                         return Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -286,7 +209,7 @@ class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
                                                         FontWeight.bold),
                                               ),
                                               Text(
-                                                '${creditorBankDetails?['AccountNumber']}',
+                                                '${debtorBankDetails['AccountNumber']}',
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.normal,
                                                   fontSize: TSizes.md,
@@ -327,7 +250,8 @@ class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
                                                         FontWeight.bold),
                                               ),
                                               Text(
-                                                '${debtTicket['phoneNumber']}',
+                                                paymentController
+                                                    .phoneNumber.value,
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.normal,
                                                   fontSize: TSizes.md,
@@ -357,6 +281,33 @@ class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: TSizes.spaceBtwSections),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Payment Amount',
+                      style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: TSizes.fontSizeSm + 2),
+                    ),
+                    Obx(() {
+                      var debtAmount = paymentController.debtTicket.value;
+                      if (debtAmount != null) {
+                        return Text('RM ${debtAmount['amount']}',
+                            style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: TSizes.fontSizeLg + 2,
+                                fontWeight: FontWeight.w600));
+                      } else {
+                        return const Text('Error in fetch debt ticket amount');
+                      }
+                    }),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -381,6 +332,29 @@ class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
           ),
         ),
       ]),
+    );
+  }
+
+  Widget _buildAmountButton(
+      PaymentController paymentController, String amount) {
+    return Container(
+      height: 50,
+      width: 70,
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        color: Colors.amber,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: TextButton(
+        onPressed: () {
+          paymentController.paymentAmount.text = amount;
+          paymentController.errorText(amount);
+        },
+        child: Text(
+          amount,
+          style: const TextStyle(fontSize: TSizes.lg, color: Colors.black),
+        ),
+      ),
     );
   }
 }

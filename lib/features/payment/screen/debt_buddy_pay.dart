@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
-import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:bucks_buddy/common/styles/spacing_styles.dart';
 import 'package:bucks_buddy/utils/constants/image_strings.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
-import 'package:bucks_buddy/utils/device/device_utility.dart';
 
-class DebtBuddyPayApp extends StatelessWidget {
+class DebtBuddyPay extends StatelessWidget {
+  final String debtTicketId;
+
+  DebtBuddyPay({required this.debtTicketId});
+
   final PaymentController paymentController = Get.put(PaymentController());
 
   @override
@@ -40,20 +42,25 @@ class DebtBuddyPayApp extends StatelessWidget {
             Expanded(
               child: Obx(
                 () {
+                  paymentController.fetchDebtTickeToPay(debtTicketId);
                   var debtTicket = paymentController.debtTicket.value;
-                  var user = paymentController.user.value;
-                  var userBankDetails =
-                      paymentController.debtorBankDetails.value;
+                  // var user = paymentController.user.value;
 
                   if (debtTicket == null) {
                     return const Center(
-                      child: Text('No debt details found'),
+                      child: Column(children: [
+                        Text('No debt details found'),
+                        SizedBox(
+                          height: TSizes.spaceBtwInputFields,
+                        ),
+                        CircularProgressIndicator()
+                      ]),
                     );
                   }
 
                   var data = debtTicket.data();
-                  var debt = user?.data();
-                  var bankDetails = userBankDetails?.data();
+                  // var debt = user?.data();
+                  // var bankDetails = userBankDetails?.data();
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,8 +87,8 @@ class DebtBuddyPayApp extends StatelessWidget {
                                           fontWeight: FontWeight.w600),
                                     ),
                                     Text(
-                                      '${debt?['PhoneNumber'] ?? 'N/A'}',
-                                      style: TextStyle(
+                                      '${data?['phoneNumber'] ?? 'N/A'}',
+                                      style: const TextStyle(
                                           fontSize: TSizes.fontSizeMd),
                                     ),
                                   ],
@@ -97,8 +104,8 @@ class DebtBuddyPayApp extends StatelessWidget {
                                           fontWeight: FontWeight.w600),
                                     ),
                                     Text(
-                                      '${data?['debtor'] ?? 'N/A'}',
-                                      style: TextStyle(
+                                      '${data?['creditor'] ?? 'N/A'}',
+                                      style: const TextStyle(
                                           fontSize: TSizes.fontSizeMd),
                                     ),
                                   ],
@@ -114,8 +121,25 @@ class DebtBuddyPayApp extends StatelessWidget {
                                           fontWeight: FontWeight.w600),
                                     ),
                                     Text(
-                                      '${bankDetails?['AccountNumber'] ?? 'N/A'}',
+                                      '${data?['bankAccountNumber'] ?? 'N/A'}',
+                                      style: const TextStyle(
+                                          fontSize: TSizes.fontSizeMd),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Bank',
                                       style: TextStyle(
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    Text(
+                                      '${data?['bankAccount'] ?? 'N/A'}',
+                                      style: const TextStyle(
                                           fontSize: TSizes.fontSizeMd),
                                     ),
                                   ],

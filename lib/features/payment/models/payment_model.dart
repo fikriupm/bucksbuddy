@@ -11,6 +11,9 @@ class PaymentModel {
   String? debtorUserId;
   String? paymentId;
   String? references;
+  String? optionalReferences;
+
+  String? category;
 
   PaymentModel({
     this.amount,
@@ -20,19 +23,22 @@ class PaymentModel {
     this.debtorUserId,
     this.paymentId,
     this.references,
+    this.optionalReferences,
+    this.category,
   });
 
   // from database using JSON
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
     return PaymentModel(
-      amount: json['amount']?.toDouble(),
-      creditorUserId: json['creditor_user_id'],
-      date: json['dateTime'],
-      debtTicketId: json['debt_ticket_id'],
-      debtorUserId: json['debtor_user_id'],
-      paymentId: json['payment_id'],
-      references: json['references'],
-    );
+        amount: json['amount']?.toDouble(),
+        creditorUserId: json['creditor_user_id'],
+        date: json['dateTime'],
+        debtTicketId: json['debt_ticket_id'],
+        debtorUserId: json['debtor_user_id'],
+        paymentId: json['payment_id'],
+        references: json['references'],
+        optionalReferences: json['optionalrReferences'],
+        category: json['category']);
   }
 
   // store to Firebase
@@ -45,6 +51,8 @@ class PaymentModel {
       if (debtorUserId != null) 'debtor_user_id': debtorUserId,
       if (paymentId != null) 'payment_id': paymentId,
       if (references != null) 'references': references,
+      if (optionalReferences != null) 'optionalrReferences': optionalReferences,
+      if (category != null) 'category': category,
     };
   }
 }

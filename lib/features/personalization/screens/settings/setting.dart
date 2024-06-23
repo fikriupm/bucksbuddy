@@ -28,7 +28,7 @@ class SettingScreen extends StatelessWidget {
                 /// Appbar
                 TAppBar(
                   title: Text(
-                    'Account',
+                    'Profile',
                     style: Theme.of(context)
                         .textTheme
                         .headlineMedium!
@@ -60,7 +60,7 @@ class SettingScreen extends StatelessWidget {
 
                   TSettingsMenuTile(
                     icon: Iconsax.bank,
-                    title: 'Bank  Hanan Account',
+                    title: 'Bank Account',
                     subTitle: 'Registered Account for Transaction',
                     onTap: () => Get.to(() => const TransactionAccountScreen()),
                   ),

@@ -1,26 +1,35 @@
+import 'package:bucks_buddy/features/home/controllers/homepage_controller.dart';
 import 'package:bucks_buddy/features/home/screens/widget/debt_amount.dart';
 import 'package:bucks_buddy/features/home/screens/widget/debt_details_section.dart';
 import 'package:bucks_buddy/features/home/screens/widget/nearby_friend_section.dart';
 import 'package:bucks_buddy/features/home/screens/widget/quick_action_section.dart';
 import 'package:bucks_buddy/features/home/screens/widget/recent_debt_section.dart';
 import 'package:bucks_buddy/features/home/screens/widget/user_section.dart';
+import 'package:bucks_buddy/features/view_debt_analysis/controller/expenses_controller.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class Homepage extends StatelessWidget {
-  const Homepage({super.key});
+  Homepage({super.key});
+  HomeController homeController = Get.put(HomeController());
+  final ExpensesController expensesController = Get.put(ExpensesController());
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 47.0, bottom: 10.0), // Adjust the values as needed
+          padding: EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 47.0,
+              bottom: 10.0), // Adjust the values as needed
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: TSizes.spaceBtwItems),
-              
+
               // user section
               UserSection(),
               SizedBox(height: TSizes.spaceBtwItems),
@@ -36,8 +45,7 @@ class Homepage extends StatelessWidget {
               // quick action
               QuickActionSection(),
               SizedBox(height: TSizes.sm),
-              
-              // under quick_action_section class
+
               QuickActionIcon(),
               SizedBox(height: TSizes.sm),
               QuickActionText(),
