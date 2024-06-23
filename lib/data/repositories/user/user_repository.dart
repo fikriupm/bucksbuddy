@@ -5,19 +5,19 @@ import 'package:bucks_buddy/utils/exceptions/firebase_exceptions.dart';
 import 'package:bucks_buddy/utils/exceptions/format_exceptions.dart';
 import 'package:bucks_buddy/utils/exceptions/platform_exceptions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 
-
 /// Repository class for user-related operations.
 class UserRepository extends GetxController {
  static UserRepository get instance => Get.find();
 
- final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+ final FirebaseFirestore _db = FirebaseFirestore.instance;
 
 
  /// Function to save user data to Firestore.
@@ -34,6 +34,7 @@ class UserRepository extends GetxController {
      throw 'Something went wrong. Please try again';
    }
  }
+
 
  /// Function to fetch user details based on user ID
  Future<UserModel> fetchUserDetails() async {
@@ -124,6 +125,7 @@ class UserRepository extends GetxController {
 }
 
 
+
  ///upload any image
  Future<String> uploadImage(String path, XFile image) async {
    try {
@@ -147,12 +149,13 @@ class UserRepository extends GetxController {
 
 
  //Function to add friends to user's friend list
- Future<void> addFriend(String userId, String friendId, String friendUsername, String currentUserUsername) async {
+ Future<void> addFriend(String userId, String friendId, String friendUsername, String currentUserUsername, String friendProfilePicture) async {
  try {
    // Construct the friend object for the current user
    Map<String, String> friendForCurrentUser = {
      'friendId': friendId,
      'friendUsername': friendUsername,
+     'friendProfilePicture' : friendProfilePicture,
    };
 
 
@@ -160,6 +163,7 @@ class UserRepository extends GetxController {
    Map<String, String> friendForFriend = {
      'friendId': userId,
      'friendUsername': currentUserUsername,
+     'friendProfilePicture' : friendProfilePicture,
    };
 
 
@@ -179,14 +183,13 @@ class UserRepository extends GetxController {
 }
 
 
-
-
-Future<void> removeFriend(String userId, String friendId, String friendUsername, String currentUserUsername) async {
+Future<void> removeFriend(String userId, String friendId, String friendUsername, String currentUserUsername, String friendProfilePicture) async {
  try {
    // Construct the friend object for the current user
    Map<String, String> friendForCurrentUser = {
      'friendId': friendId,
      'friendUsername': friendUsername,
+     'friendProfilePicture' : friendProfilePicture,
    };
 
 
@@ -194,6 +197,7 @@ Future<void> removeFriend(String userId, String friendId, String friendUsername,
    Map<String, String> friendForFriend = {
      'friendId': userId,
      'friendUsername': currentUserUsername,
+     'friendProfilePicture' : friendProfilePicture,
    };
 
 
@@ -237,7 +241,11 @@ Future<void> removeFriend(String userId, String friendId, String friendUsername,
  }
 }
 
-
 }
+
+
+
+
+
 
 

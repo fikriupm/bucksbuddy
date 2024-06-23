@@ -4,12 +4,10 @@ import 'package:bucks_buddy/data/repositories/user/user_repository.dart';
 import 'package:bucks_buddy/features/authentication/models/user_model.dart';
 
 
-
 class FriendScreen extends StatefulWidget {
  @override
  _FriendScreenState createState() => _FriendScreenState();
 }
-
 
 
 class _FriendScreenState extends State<FriendScreen> {
@@ -24,8 +22,6 @@ class _FriendScreenState extends State<FriendScreen> {
    super.initState();
    _fetchData();
  }
-
- 
 
 
  Future<void> _fetchData() async {
@@ -45,12 +41,14 @@ class _FriendScreenState extends State<FriendScreen> {
  }
 
 
-
  void _updateNonFriendsList() {
-   _nonFriends = _users.where((user) => !_currentUserFriends.contains(user.id)).toList();
-   print('Non-friends: ${_nonFriends.map((u) => u.toJson()).toList()}');
-   setState(() {});
- }
+var currentUserUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+_nonFriends = _users.where((user) => user.id != currentUserUid).toList();
+print('Non-friends: ${_nonFriends.map((u) => u.toJson()).toList()}');
+setState(() {
+});
+
+}
 
 
 
@@ -77,34 +75,6 @@ class _FriendScreenState extends State<FriendScreen> {
      );
    }
 
- Widget _buildBody() {
-   if (_isLoading) {
-     return Center(
-       child: CircularProgressIndicator(),
-     );
-   }
-
-
-   if (_users.isEmpty) {
-     return Center(
-       child: Column(
-         mainAxisAlignment: MainAxisAlignment.center,
-         children: [
-           Text('No users found'),
-           SizedBox(height: 20),
-           Center(
-             child: Padding(
-               padding: const EdgeInsets.all(16.0),
-               child: Image.asset(
-                 'assets/logos/logo-main.png',
-                 height: 80,
-               ),
-             ),
-           ),
-         ],
-       ),
-     );
-   }
 
    if (_users.isEmpty) {
      return Center(
@@ -145,63 +115,47 @@ class _FriendScreenState extends State<FriendScreen> {
      ],
    );
  }
-
-   return Column(
-     crossAxisAlignment: CrossAxisAlignment.start,
-     children: [
-       Center(
-         child: Padding(
-           padding: const EdgeInsets.all(16.0),
-           child: Image.asset(
-             'assets/logos/logo-main.png',
-             height: 80,
-           ),
-         ),
-       ),
-       _buildSection('Your Friends', _currentUserFriends, isFriendSection: true),
-       _buildSection('Add a new friend', _nonFriends, isFriendSection: false),
-     ],
-   );
- }
-
-
+   
    Widget _buildSection(String title, List<dynamic> items, {required bool isFriendSection}) {
- return Column(
-   crossAxisAlignment: CrossAxisAlignment.start,
-   children: [
-     Padding(
-       padding: const EdgeInsets.all(8.0),
-       child: Text(
-         title,
-         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-       ),
-     ),
-     ListView.builder(
-       shrinkWrap: true,
-       physics: NeverScrollableScrollPhysics(),
-       itemCount: items.length,
-       itemBuilder: (context, index) {
-         final item = items[index];
-         if (isFriendSection && item is String) {
-           // Find the user corresponding to the friend ID
-           final user = _users.firstWhere((user) => user.id == item, orElse: () => UserModel.empty());
-           // Build the friend tile with a remove button
-           return _buildFriendTile(user.name, () {
-             _removeFriend(user.id, user.name);  // This call remains the same
-           });
-         } else if (!isFriendSection && item is UserModel) {
-           // Build the non-friend tile with an add button
-           return _buildFriendTile(item.name, () {
-             _addFriend(item.id, item.name); 
-           }, isAddButton: true);
-         } else {
-           return SizedBox.shrink();
-         }
-       },
-     ),
-   ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            title,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
+            if (isFriendSection && item is String) {
+              // Find the user corresponding to the friend ID
+              final user = _users.firstWhere((user) => user.id == item, orElse: () => UserModel.empty());
+              // Build the friend tile with a remove button
+              return _buildFriendTile(user.name, () {
+                _removeFriend(user.id, user.name, user.profilePicture);  // This call remains the same
+              });
+            } else if (!isFriendSection && item is UserModel) {
+              // Build the non-friend tile with an add button
+              return _buildFriendTile(item.name, () {
+                _addFriend(item.id, item.name, item.profilePicture); 
+              }, isAddButton: true);
+            } else {
+              return SizedBox.shrink();
+            }
+          },
+        ),
+      ],
  );
 }
+
+
+
 
 
 Widget _buildFriendTile(String friendName, VoidCallback onPressed, {bool isAddButton = false}) {
@@ -230,7 +184,8 @@ Widget _buildFriendTile(String friendName, VoidCallback onPressed, {bool isAddBu
 
 
 
- Future<void> _addFriend(String friendId, String friendName) async {
+
+ Future<void> _addFriend(String friendId, String friendName, String friendProfilePicture) async {
  try {
    final currentUser = FirebaseAuth.instance.currentUser;
    if (currentUser != null) {
@@ -238,12 +193,12 @@ Widget _buildFriendTile(String friendName, VoidCallback onPressed, {bool isAddBu
      final currentUserDetails = await UserRepository.instance.fetchUserDetails();
      final currentUserUsername = currentUserDetails.name;
 
-
      await UserRepository.instance.addFriend(
        currentUser.uid,
        friendId,
        friendName,
        currentUserUsername,
+       friendProfilePicture,
      );
      setState(() {
        _currentUserFriends.add(friendId);
@@ -267,7 +222,7 @@ Widget _buildFriendTile(String friendName, VoidCallback onPressed, {bool isAddBu
 
 
  // Remove friends from list
-Future<void> _removeFriend(String friendId, String friendName) async {
+Future<void> _removeFriend(String friendId, String friendName, String friendProfilePicture) async {
    try {
      final currentUser = FirebaseAuth.instance.currentUser;
      if (currentUser != null) {
@@ -282,6 +237,7 @@ Future<void> _removeFriend(String friendId, String friendName) async {
          friendId,
          friendName,
          currentUserUsername,
+         friendProfilePicture,
        );
 
 
