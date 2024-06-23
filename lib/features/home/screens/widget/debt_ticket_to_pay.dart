@@ -27,7 +27,7 @@ class DebtTicketToPay extends StatelessWidget {
             Navigator.pop(context);
           },
         ),
-        title: const Text('Ticket for You Details',
+        title: const Text('Debt Ticket Details',
             style: TextStyle(color: Colors.black)),
         centerTitle: true,
       ),

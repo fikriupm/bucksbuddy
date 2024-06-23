@@ -10,7 +10,7 @@ class Expenses extends StatelessWidget {
   Widget build(BuildContext context) {
     final ExpensesController expensesController = Get.find();
     return Scaffold(
-      appBar: AppBar(),
+      // appBar: AppBar(),
       body: SingleChildScrollView(
         child: Padding(
           padding: TSpacingStyle.paddingWithAppBarHeight,

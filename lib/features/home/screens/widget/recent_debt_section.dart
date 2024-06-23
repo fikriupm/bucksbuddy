@@ -1,21 +1,29 @@
+import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_created.dart';
+import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_own.dart';
 import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_ticket.dart';
+import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 
 class RecentDebtSection extends StatelessWidget {
-  const RecentDebtSection({
+  RecentDebtSection({
     super.key,
   });
+  final DebtTicketController debtTicketController =
+      Get.put(DebtTicketController());
+  final PaymentController _debtTicketController = Get.put(PaymentController());
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DebtTicket?>(
-      future: _fetchLatestDebtTicket(),
+      future: _debtTicketController.fetchLatestDebtTicket(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: const CircularProgressIndicator());
@@ -45,21 +53,31 @@ class RecentDebtSection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          "Recent Tickets Created",
+                          "Debt Tickets",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: TSizes.fontSizeSm,
                           ),
                         ),
                         TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ViewAllDebtTicketsScreen(),
-                              ),
-                            );
+                          onPressed: () async {
+                            try {
+                              debtTicketController.debtorUsername.value =
+                                  await debtTicketController
+                                      .fetchCurrentUsername();
+                              var debtorUsername =
+                                  debtTicketController.debtorUsername.value;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        ViewAllDebtTicketsScreen(
+                                            debtorUsername: debtorUsername)),
+                              );
+                            } catch (e) {
+                              // Handle error if username fetching fails
+                              print('Error fetching username: $e');
+                            }
                           },
                           child: const Text(
                             "View all",
@@ -179,38 +197,5 @@ class RecentDebtSection extends StatelessWidget {
         }
       },
     );
-  }
-
-  Future<DebtTicket?> _fetchLatestDebtTicket() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(user.uid)
-            .collection('DebtTickets')
-            .where('status', isEqualTo: 'not_paid')
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          List<DebtTicket> debtTickets = querySnapshot.docs.map((doc) {
-            return DebtTicket.fromJson(doc.data() as Map<String, dynamic>);
-          }).toList();
-
-          // Sort the debt tickets by dateTime in descending order to get the latest ticket first
-          debtTickets.sort((a, b) =>
-              DateTime.parse(b.dateTime).compareTo(DateTime.parse(a.dateTime)));
-
-          // Return the latest debt ticket
-          return debtTickets.first;
-        } else {
-          return null; // Return null if no ticket found
-        }
-      } else {
-        throw Exception('User is not authenticated.');
-      }
-    } catch (e) {
-      throw Exception('Error fetching latest debt ticket: $e');
-    }
   }
 }

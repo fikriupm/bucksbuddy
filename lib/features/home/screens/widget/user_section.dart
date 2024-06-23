@@ -67,10 +67,10 @@ class UserSection extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        const Padding(
-          padding: EdgeInsets.only(right: TSizes.defaultSpace / 2),
-          child: Icon(Icons.notifications_none_sharp),
-        ),
+        // const Padding(
+        //   padding: EdgeInsets.only(right: TSizes.defaultSpace / 2),
+        //   child: Icon(Icons.notifications_none_sharp),
+        // ),
       ],
     );
   }

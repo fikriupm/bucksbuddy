@@ -1,7 +1,11 @@
+import 'dart:ffi';
+
 import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/createDebt.dart';
 import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_own.dart';
 import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_from_paid.dart';
+import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_paid_screen.dart';
+import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_ticket.dart';
 import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_to_paid.dart';
 import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
 import 'package:bucks_buddy/utils/constants/image_strings.dart';
@@ -30,34 +34,34 @@ class QuickActionSection extends StatelessWidget {
                   fontSize: TSizes.fontSizeLg * 1.2,
                   fontWeight: FontWeight.bold),
             ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  // Fetch username from Firestore
-                  String debtorUsername =
-                      await debtTicketController.fetchCurrentUsername();
+            // TextButton(
+            //   onPressed: () async {
+            //     try {
+            //       // Fetch username from Firestore
+            //       String debtorUsername =
+            //           await debtTicketController.fetchCurrentUsername();
 
-                  // Navigate to the new screen with the fetched username
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ViewAllDebtToPaidScreen(
-                          debtorUsername: debtorUsername),
-                    ),
-                  );
-                } catch (e) {
-                  // Handle the error appropriately here, e.g., show a snackbar or dialog
-                  print("Error fetching username: $e");
-                }
-              },
-              child: const Text(
-                "View all",
-                style: TextStyle(
-                  fontSize: TSizes.fontSizeSm,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            //       // Navigate to the new screen with the fetched username
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (context) => ViewAllDebtToPaidScreen(
+            //               debtorUsername: debtorUsername),
+            //         ),
+            //       );
+            //     } catch (e) {
+            //       // Handle the error appropriately here, e.g., show a snackbar or dialog
+            //       print("Error fetching username: $e");
+            //     }
+            //   },
+            //   child: const Text(
+            //     "View all",
+            //     style: TextStyle(
+            //       fontSize: TSizes.fontSizeSm,
+            //       fontWeight: FontWeight.bold,
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ],
@@ -100,12 +104,17 @@ class QuickActionIcon extends StatelessWidget {
               color: Colors.grey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(100)),
           child: IconButton(
-              onPressed: () async {
+               onPressed: () async {
                 try {
+                  debtTicketController.debtorUsername.value =
+                      await debtTicketController.fetchCurrentUsername();
+                  var debtorUsername =
+                      debtTicketController.debtorUsername.value;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ViewAllDebtFromPaidScreen()),
+                        builder: (context) => ViewAllDebtTicketsPaidScreen(
+                            debtorUsername: debtorUsername)),
                   );
                 } catch (e) {
                   // Handle error if username fetching fails
@@ -126,12 +135,14 @@ class QuickActionIcon extends StatelessWidget {
           child: IconButton(
               onPressed: () async {
                 try {
-                  String debtorUsername = await debtTicketController
-                      .fetchCurrentUsername(); // Fetch username from Firestore
+                  debtTicketController.debtorUsername.value =
+                      await debtTicketController.fetchCurrentUsername();
+                  var debtorUsername =
+                      debtTicketController.debtorUsername.value;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ViewAllDebtOwnScreen(
+                        builder: (context) => ViewAllDebtTicketsScreen(
                             debtorUsername: debtorUsername)),
                   );
                 } catch (e) {
@@ -165,11 +176,17 @@ class QuickActionText extends StatelessWidget {
         SizedBox(
           width: TSizes.spaceBtwItems,
         ),
-        Text("Split Bills"),
+        Text(
+          "Debt Ticket \nSettled",
+          textAlign: TextAlign.center,
+        ),
         SizedBox(
           width: TSizes.spaceBtwItems,
         ),
-        Text("View Debt")
+        Text(
+          "View Debt \nTickets",
+          textAlign: TextAlign.center,
+        )
       ],
     );
   }

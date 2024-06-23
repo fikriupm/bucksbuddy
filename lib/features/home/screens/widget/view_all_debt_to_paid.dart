@@ -1,5 +1,5 @@
 import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
-import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_created.dart';
+import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_to_pay.dart';
 import 'package:flutter/material.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:get/get.dart';
@@ -16,7 +16,7 @@ class ViewAllDebtToPaidScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Debt Tickets'),
+        title: const Text('Debt Tickets kawan dah bayar'),
       ),
       body: FutureBuilder<List<DebtTicket>>(
         future: _debtTicketController.viewDebtTicketUOwePaid(debtorUsername),
@@ -48,7 +48,7 @@ class ViewAllDebtToPaidScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Column(
+                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -66,7 +66,7 @@ class ViewAllDebtToPaidScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => DebtTicketTCreated(
+                                  builder: (context) => DebtTicketToPay(
                                       debtTicketId: ticket.debtTicketId),
                                 ),
                               );
@@ -79,20 +79,60 @@ class ViewAllDebtToPaidScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Text(
-                        'From: ${ticket.creditor}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                      RichText(
+                        text: TextSpan(
+                          style: DefaultTextStyle.of(context)
+                              .style
+                              .copyWith(fontSize: 16),
+                          children: [
+                            TextSpan(
+                              text: 'From: ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '${ticket.creditor}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      RichText(
+                        text: TextSpan(
+                          style: DefaultTextStyle.of(context)
+                              .style
+                              .copyWith(fontSize: 16),
+                          children: [
+                            TextSpan(
+                              text: 'To: ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '${ticket.debtor}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       Text(
                         'RM${ticket.amount}',
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
                           Expanded(
@@ -101,8 +141,8 @@ class ViewAllDebtToPaidScreen extends StatelessWidget {
                                 const Icon(Icons.calendar_month, size: 20),
                                 const SizedBox(width: 5),
                                 Text(
-                                  DateFormat.yMd().format(DateTime.parse(
-                                      ticket.dateTime)), // Format the date
+                                  DateFormat.yMd()
+                                      .format(DateTime.parse(ticket.dateTime)),
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],
@@ -115,8 +155,8 @@ class ViewAllDebtToPaidScreen extends StatelessWidget {
                                 const Icon(Icons.access_time, size: 20),
                                 const SizedBox(width: 5),
                                 Text(
-                                  DateFormat.Hms().format(DateTime.parse(
-                                      ticket.dateTime)), // Format the time
+                                  DateFormat.Hms()
+                                      .format(DateTime.parse(ticket.dateTime)),
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],

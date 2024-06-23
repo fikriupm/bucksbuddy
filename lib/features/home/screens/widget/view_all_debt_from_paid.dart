@@ -1,5 +1,5 @@
 import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
-import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_to_pay.dart';
+import 'package:bucks_buddy/features/home/screens/widget/debt_ticket_created.dart';
 import 'package:flutter/material.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:get/get.dart';
@@ -14,7 +14,7 @@ class ViewAllDebtFromPaidScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Debt Tickets'),
+        title: const Text('Debt Tickets created setle'),
       ),
       body: FutureBuilder<List<DebtTicket>>(
         future: _debtTicketController.viewDebtTicketPaid(),
@@ -64,7 +64,7 @@ class ViewAllDebtFromPaidScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => DebtTicketToPay(
+                                  builder: (context) => DebtTicketTCreated(
                                       debtTicketId: ticket.debtTicketId),
                                 ),
                               );
