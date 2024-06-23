@@ -45,7 +45,7 @@ class RecentDebtSection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          "Debt Tickets",
+                          "Recent Tickets Created",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: TSizes.fontSizeSm,
@@ -189,15 +189,20 @@ class RecentDebtSection extends StatelessWidget {
             .collection('Users')
             .doc(user.uid)
             .collection('DebtTickets')
-            .orderBy('dateTime',
-                descending:
-                    true) // Order by dateTime in descending order to get the latest ticket first
-            .limit(1) // Limit to 1 to get only the latest ticket
+            .where('status', isEqualTo: 'not_paid')
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
-          return DebtTicket.fromJson(
-              querySnapshot.docs.first.data() as Map<String, dynamic>);
+          List<DebtTicket> debtTickets = querySnapshot.docs.map((doc) {
+            return DebtTicket.fromJson(doc.data() as Map<String, dynamic>);
+          }).toList();
+
+          // Sort the debt tickets by dateTime in descending order to get the latest ticket first
+          debtTickets.sort((a, b) =>
+              DateTime.parse(b.dateTime).compareTo(DateTime.parse(a.dateTime)));
+
+          // Return the latest debt ticket
+          return debtTickets.first;
         } else {
           return null; // Return null if no ticket found
         }
