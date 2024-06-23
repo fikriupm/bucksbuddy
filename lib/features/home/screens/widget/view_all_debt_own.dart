@@ -18,7 +18,7 @@ class ViewAllDebtOwnScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Debt Tickets'),
+        title: const Text('Debt Tickets from kawan '),
       ),
       body: FutureBuilder<List<DebtTicket>>(
         future: _debtTicketController.fetchDebtTicketsOwn(debtorUsername),

@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:math';
 
+import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:bucks_buddy/features/payment/models/payment_model.dart';
 import 'package:bucks_buddy/features/payment/screen/approval_screen.dart';
 import 'package:bucks_buddy/features/payment/screen/payment_amount_screen.dart';
@@ -390,5 +391,73 @@ class PaymentController extends GetxController {
 
   void nextPageApprovalScreen() {
     Get.to(ApprovalScreen());
+  }
+
+  Future<DebtTicket?> fetchLatestDebtTicket() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(user.uid)
+            .collection('DebtTickets')
+            .where('status', isEqualTo: 'not_paid')
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          List<DebtTicket> debtTickets = querySnapshot.docs.map((doc) {
+            return DebtTicket.fromJson(doc.data() as Map<String, dynamic>);
+          }).toList();
+
+          // Sort the debt tickets by dateTime in descending order to get the latest ticket first
+          debtTickets.sort((a, b) =>
+              DateTime.parse(b.dateTime).compareTo(DateTime.parse(a.dateTime)));
+
+          // Return the latest debt ticket
+          return debtTickets.first;
+        } else {
+          return null; // Return null if no ticket found
+        }
+      } else {
+        throw Exception('User is not authenticated.');
+      }
+    } catch (e) {
+      throw Exception('Error fetching latest debt ticket: $e');
+    }
+  }
+ Future<DebtTicket?> fetchLatestDebtTicketOwe(String debtorUsername) async {
+    String debtorYouOwn = debtorUsername;
+
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(user.uid)
+            .collection('DebtTickets')
+            .where('debtor', isEqualTo: debtorYouOwn)
+            .where('status', isEqualTo: 'not_paid')
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          List<DebtTicket> debtTickets = querySnapshot.docs.map((doc) {
+            return DebtTicket.fromJson(doc.data() as Map<String, dynamic>);
+          }).toList();
+
+          // Sort the debt tickets by dateTime in descending order to get the latest ticket first
+          debtTickets.sort((a, b) =>
+              DateTime.parse(b.dateTime).compareTo(DateTime.parse(a.dateTime)));
+
+          // Return the latest debt ticket
+          return debtTickets.first;
+        } else {
+          return null; // Return null if no ticket found
+        }
+      } else {
+        throw Exception('User is not authenticated.');
+      }
+    } catch (e) {
+      throw Exception('Error fetching latest debt ticket: $e');
+    }
   }
 }

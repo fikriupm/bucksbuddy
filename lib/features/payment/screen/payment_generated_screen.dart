@@ -1,4 +1,5 @@
 import 'package:bucks_buddy/common/styles/spacing_styles.dart';
+import 'package:bucks_buddy/features/home/screens/widget/recent_debt_section.dart';
 import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
 import 'package:bucks_buddy/navigation_menu.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
@@ -10,6 +11,8 @@ class PaymentGeneratedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final PaymentController paymentController = Get.put(PaymentController());
+    final PaymentController _debtTicketController =
+      Get.put(PaymentController());
 
     return Scaffold(
       body: Stack(children: [

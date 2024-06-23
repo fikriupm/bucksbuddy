@@ -18,6 +18,7 @@ class Homepage extends StatelessWidget {
 
   final HomeController homeController = Get.put(HomeController());
   final ExpensesController expensesController = Get.put(ExpensesController());
+  
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +71,9 @@ class Homepage extends StatelessWidget {
                       const QuickActionText(),
                       const SizedBox(height: TSizes.defaultSpace),
 
+
                       // Recent Split Bills
-                      const RecentDebtSection(),
+                      RecentDebtSection(),
                       const SizedBox(height: TSizes.spaceBtwItems),
 
                       // Nearby friend section
