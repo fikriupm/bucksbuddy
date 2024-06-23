@@ -11,7 +11,7 @@ class PaymentModel {
   String? debtorUserId;
   String? paymentId;
   String? references;
-  String? optionalrReferences;
+  String? optionalReferences;
 
   String? category;
 
@@ -23,7 +23,7 @@ class PaymentModel {
     this.debtorUserId,
     this.paymentId,
     this.references,
-    this.optionalrReferences,
+    this.optionalReferences,
     this.category,
   });
 
@@ -37,7 +37,7 @@ class PaymentModel {
         debtorUserId: json['debtor_user_id'],
         paymentId: json['payment_id'],
         references: json['references'],
-        optionalrReferences: json['optionalrReferences'],
+        optionalReferences: json['optionalrReferences'],
         category: json['category']);
   }
 
@@ -51,8 +51,7 @@ class PaymentModel {
       if (debtorUserId != null) 'debtor_user_id': debtorUserId,
       if (paymentId != null) 'payment_id': paymentId,
       if (references != null) 'references': references,
-      if (optionalrReferences != null)
-        'optionalrReferences': optionalrReferences,
+      if (optionalReferences != null) 'optionalrReferences': optionalReferences,
       if (category != null) 'category': category,
     };
   }

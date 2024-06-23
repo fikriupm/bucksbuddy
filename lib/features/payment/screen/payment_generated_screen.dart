@@ -1,13 +1,10 @@
-import 'dart:ffi';
-
 import 'package:bucks_buddy/common/styles/spacing_styles.dart';
-import 'package:bucks_buddy/features/home/homepage.dart';
 import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
+import 'package:bucks_buddy/navigation_menu.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:bucks_buddy/utils/device/device_utility.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 class PaymentGeneratedScreen extends StatelessWidget {
   @override
@@ -35,12 +32,14 @@ class PaymentGeneratedScreen extends StatelessWidget {
                   children: [
                     const Text('RM'),
                     const SizedBox(width: 15),
-                    Text(
-                      paymentController.amount.value,
-                      style: const TextStyle(
-                          fontSize: TSizes.fontSizeLg + 10,
-                          fontWeight: FontWeight.w600),
-                    ),
+                    Obx(() {
+                      return Text(
+                        paymentController.amount.value.toString(),
+                        style: const TextStyle(
+                            fontSize: TSizes.fontSizeLg + 10,
+                            fontWeight: FontWeight.w600),
+                      );
+                    }),
                   ],
                 ),
                 const SizedBox(height: 30),
@@ -80,6 +79,13 @@ class PaymentGeneratedScreen extends StatelessWidget {
                               const Text('Payment Id '),
                               Text(paymentController.paymentId.value)
                             ]),
+                        const SizedBox(height: 30),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('DebtTicket Id '),
+                              Text(paymentController.debtTicketId.value)
+                            ]),
                       ],
                     ),
                   );
@@ -97,7 +103,7 @@ class PaymentGeneratedScreen extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 try {
-                  Get.to(const Homepage());
+                  Get.to(const NavigationMenu());
                 } catch (e) {
                   Get.snackbar('Error', e.toString());
                 }
