@@ -39,8 +39,8 @@ class _FriendScreenState extends State<FriendScreen> {
   }
 
   void _updateNonFriendsList() {
-    _nonFriends =
-        _users.where((user) => !_currentUserFriends.contains(user.id)).toList();
+    var currentUserUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    _nonFriends = _users.where((user) => user.id != currentUserUid).toList();
     print('Non-friends: ${_nonFriends.map((u) => u.toJson()).toList()}');
     setState(() {});
   }
@@ -67,72 +67,24 @@ class _FriendScreenState extends State<FriendScreen> {
       );
     }
 
-    Widget _buildBody() {
-      if (_isLoading) {
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-      }
-
-      if (_users.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('No users found'),
-              SizedBox(height: 20),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Image.asset(
-                    'assets/logos/logo-main.png',
-                    height: 80,
-                  ),
+    if (_users.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('No users found'),
+            SizedBox(height: 20),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Image.asset(
+                  'assets/logos/logo-main.png',
+                  height: 80,
                 ),
-              ),
-            ],
-          ),
-        );
-      }
-
-      if (_users.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('No users found'),
-              SizedBox(height: 20),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Image.asset(
-                    'assets/logos/logo-main.png',
-                    height: 80,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Image.asset(
-                'assets/logos/logo-main.png',
-                height: 80,
               ),
             ),
-          ),
-          _buildSection('Your Friends', _currentUserFriends,
-              isFriendSection: true),
-          _buildSection('Add a new friend', _nonFriends,
-              isFriendSection: false),
-        ],
+          ],
+        ),
       );
     }
 
@@ -179,12 +131,13 @@ class _FriendScreenState extends State<FriendScreen> {
                   orElse: () => UserModel.empty());
               // Build the friend tile with a remove button
               return _buildFriendTile(user.name, () {
-                _removeFriend(user.id, user.name); // This call remains the same
+                _removeFriend(user.id, user.name,
+                    user.profilePicture); // This call remains the same
               });
             } else if (!isFriendSection && item is UserModel) {
               // Build the non-friend tile with an add button
               return _buildFriendTile(item.name, () {
-                _addFriend(item.id, item.name);
+                _addFriend(item.id, item.name, item.profilePicture);
               }, isAddButton: true);
             } else {
               return SizedBox.shrink();
@@ -220,7 +173,8 @@ class _FriendScreenState extends State<FriendScreen> {
     );
   }
 
-  Future<void> _addFriend(String friendId, String friendName) async {
+  Future<void> _addFriend(
+      String friendId, String friendName, String friendProfilePicture) async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
@@ -234,6 +188,7 @@ class _FriendScreenState extends State<FriendScreen> {
           friendId,
           friendName,
           currentUserUsername,
+          friendProfilePicture,
         );
         setState(() {
           _currentUserFriends.add(friendId);
@@ -256,7 +211,8 @@ class _FriendScreenState extends State<FriendScreen> {
   }
 
   // Remove friends from list
-  Future<void> _removeFriend(String friendId, String friendName) async {
+  Future<void> _removeFriend(
+      String friendId, String friendName, String friendProfilePicture) async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
@@ -271,6 +227,7 @@ class _FriendScreenState extends State<FriendScreen> {
           friendId,
           friendName,
           currentUserUsername,
+          friendProfilePicture,
         );
 
         setState(() {

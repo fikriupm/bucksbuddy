@@ -55,3 +55,4 @@ class NavigationController extends GetxController {
     const SettingScreen(),
   ];
 }
+

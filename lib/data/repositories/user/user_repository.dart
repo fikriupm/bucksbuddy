@@ -5,6 +5,7 @@ import 'package:bucks_buddy/utils/exceptions/firebase_exceptions.dart';
 import 'package:bucks_buddy/utils/exceptions/format_exceptions.dart';
 import 'package:bucks_buddy/utils/exceptions/platform_exceptions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -153,18 +154,20 @@ class UserRepository extends GetxController {
 
   //Function to add friends to user's friend list
   Future<void> addFriend(String userId, String friendId, String friendUsername,
-      String currentUserUsername) async {
+      String currentUserUsername, String friendProfilePicture) async {
     try {
       // Construct the friend object for the current user
       Map<String, String> friendForCurrentUser = {
         'friendId': friendId,
         'friendUsername': friendUsername,
+        'friendProfilePicture': friendProfilePicture,
       };
 
       // Construct the friend object for the friend
       Map<String, String> friendForFriend = {
         'friendId': userId,
         'friendUsername': currentUserUsername,
+        'friendProfilePicture': friendProfilePicture,
       };
 
       // Update the current user's friends list to add the friend
@@ -181,19 +184,25 @@ class UserRepository extends GetxController {
     }
   }
 
-  Future<void> removeFriend(String userId, String friendId,
-      String friendUsername, String currentUserUsername) async {
+  Future<void> removeFriend(
+      String userId,
+      String friendId,
+      String friendUsername,
+      String currentUserUsername,
+      String friendProfilePicture) async {
     try {
       // Construct the friend object for the current user
       Map<String, String> friendForCurrentUser = {
         'friendId': friendId,
         'friendUsername': friendUsername,
+        'friendProfilePicture': friendProfilePicture,
       };
 
       // Construct the friend object for the friend
       Map<String, String> friendForFriend = {
         'friendId': userId,
         'friendUsername': currentUserUsername,
+        'friendProfilePicture': friendProfilePicture,
       };
 
       // Update the current user's friends list to remove the friend
