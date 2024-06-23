@@ -52,7 +52,7 @@ class UserController extends GetxController {
       profileLoading.value = true;
       final querySnapshot = await FirebaseFirestore.instance
           .collection('Users')
-          .where('Username', isEqualTo: debtorusername)
+          .where('Name', isEqualTo: debtorusername)
           .get();
 
       return querySnapshot.docs.isNotEmpty;

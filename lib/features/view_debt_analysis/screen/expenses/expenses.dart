@@ -1,7 +1,6 @@
 import 'package:bucks_buddy/common/styles/spacing_styles.dart';
 import 'package:bucks_buddy/features/view_debt_analysis/controller/expenses_controller.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
-import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -413,7 +412,7 @@ class Expenses extends StatelessWidget {
     );
   }
 
-  Obx paiChart(ExpensesController expensesController) {
+  Widget paiChart(ExpensesController expensesController) {
     try {
       var errorNoAmountPaid = expensesController.errorNoAmountPaid.value;
       var errorNoAmountReceive = expensesController.errorNoAmountReceive.value;
@@ -421,6 +420,7 @@ class Expenses extends StatelessWidget {
       if (errorNoAmountPaid == '' && errorNoAmountReceive == '') {
         return Obx(() {
           bool amountPaid = expensesController.amountPaid.value;
+
           return PieChart(
             PieChartData(
               startDegreeOffset: 0,
@@ -463,17 +463,19 @@ class Expenses extends StatelessWidget {
               amountPaid
                   ? expensesController.errorNoAmountPaid.value
                   : expensesController.errorNoAmountReceive.value,
-              style: const TextStyle(fontSize: TSizes.fontSizeSm),
+              style: const TextStyle(
+                  fontSize:
+                      14), // Replace TSizes.fontSizeSm with an actual value
             ),
           );
         });
       }
     } catch (e) {
-      return Obx(() {
-        return const Center(
-          child: Text('An error occurred'),
-        );
+      Obx(() {
+        return Text('Error');
       });
     }
+
+    return Text('Error');
   }
 }

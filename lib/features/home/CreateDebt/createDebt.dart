@@ -1,4 +1,3 @@
-// create_debt_page.dart
 import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_controller.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
 import 'package:bucks_buddy/features/home/CreateDebt/displayForm.dart';
@@ -7,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CreateDebtPage extends StatefulWidget {
-  const CreateDebtPage({super.key});
+  const CreateDebtPage({Key? key}) : super(key: key);
 
   @override
   State<CreateDebtPage> createState() => _CreateDebtPageState();
@@ -17,9 +16,9 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
   final _formKey = GlobalKey<FormState>();
   final DebtTicketController debtTicketController =
       Get.put(DebtTicketController());
+
   // Form field controllers
   final TextEditingController _creditorController = TextEditingController();
-  final TextEditingController _debtorController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _bankAccountController = TextEditingController();
   final TextEditingController _bankAccountNoController =
@@ -28,12 +27,13 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
   final TextEditingController _creditorIDController = TextEditingController();
   final TextEditingController _phoneNumController = TextEditingController();
 
-  //
+  String? selectedDebtor;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData(); // Fetch user data when the widget initializes
+    _fetchFriends(); // Fetch friends list when the widget initializes
   }
 
   // Method to fetch user data and auto-fill form fields
@@ -50,13 +50,24 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
       });
     } catch (e) {
       // Handle error
+      print('Error fetching user data: $e');
+    }
+  }
+
+  // Method to fetch friends list
+  void _fetchFriends() async {
+    try {
+      await debtTicketController.fetchAllFriends();
+    } catch (e) {
+      // Handle error
+      print('Error fetching friends: $e');
     }
   }
 
   @override
   void dispose() {
+    // Dispose all text editing controllers
     _creditorController.dispose();
-    _debtorController.dispose();
     _amountController.dispose();
     _bankAccountController.dispose();
     _bankAccountNoController.dispose();
@@ -66,39 +77,39 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
   }
 
   void _submitForm() async {
-  if (_formKey.currentState?.validate() ?? false) {
-    final debtorExists =
-        await debtTicketController.doesDebtorExist(_debtorController.text);
+    if (_formKey.currentState?.validate() ?? false) {
+      final debtorExists =
+          await debtTicketController.doesDebtorExist(selectedDebtor!);
 
-    if (!debtorExists) {
-      _showErrorDialog('The debtor does not exist.');
-      return;
-    }
+      if (!debtorExists) {
+        _showErrorDialog('The debtor does not exist.');
+        return;
+      }
 
-    final ticketData = DebtTicket(
-      creditor: _creditorController.text,
-      debtor: _debtorController.text,
-      amount: _amountController.text,
-      bankAccount: _bankAccountController.text,
-      bankAccountNumber: _bankAccountNoController.text,
-      reference: _referenceController.text,
-      phoneNumber: _phoneNumController.text,
-      dateTime: DateTime.now().toString(),
-      status: 'not_paid',
-      debtTicketId: debtTicketController.generateTicketId(), // Add this line
-    );
+      final ticketData = DebtTicket(
+        creditor: _creditorController.text,
+        debtor: selectedDebtor!,
+        amount: _amountController.text,
+        bankAccount: _bankAccountController.text,
+        bankAccountNumber: _bankAccountNoController.text,
+        reference: _referenceController.text,
+        phoneNumber: _phoneNumController.text,
+        dateTime: DateTime.now().toString(),
+        status: 'not_paid',
+        debtTicketId: debtTicketController.generateTicketId(),
+      );
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DisplayForm(
-          ticketData: ticketData.toJson(),
-          id: _creditorIDController.text,
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DisplayForm(
+            ticketData: ticketData.toJson(),
+            id: _creditorIDController.text,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -120,80 +131,20 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
     );
   }
 
-  void _showOverlay(BuildContext context, String message, GlobalKey key) {
-    final overlay = Overlay.of(context);
-    final renderBox = key.currentContext!.findRenderObject() as RenderBox;
-    final overlayRenderBox = overlay.context.findRenderObject() as RenderBox;
-    final position = renderBox.localToGlobal(
-      Offset(renderBox.size.width, 0.0),
-      ancestor: overlayRenderBox,
-    );
-
-    final entry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: position.dy,
-        left: position.dx,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(2, 2),
-                ),
-              ],
-            ),
-            child: Text(
-              message,
-              style: const TextStyle(color: Colors.black),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    overlay.insert(entry);
-    Future.delayed(const Duration(seconds: 2), () => entry.remove());
-  }
-
   Widget _buildLabeledTextField(String label, TextEditingController controller,
       {String hintText = '',
       String suffixText = '',
       TextInputType keyboardType = TextInputType.text,
-      bool isReadOnly = false,
-      Widget? suffixIcon,
-      GlobalKey? iconKey}) {
+      bool isReadOnly = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(width: 5),
-            if (suffixIcon != null)
-              GestureDetector(
-                key: iconKey,
-                onTap: () => _showOverlay(
-                  context,
-                  label == 'Creditor'
-                      ? "Debt Receiver's username"
-                      : "Debt Payer/Issuer's username",
-                  iconKey!,
-                ),
-                child: suffixIcon,
-              ),
-          ],
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 5),
         TextFormField(
@@ -228,11 +179,52 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
     );
   }
 
+  Widget _buildLabeledDropdownField(String label, String? value,
+      {required List<String> items}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 5),
+        DropdownButtonFormField<String>(
+          value: value,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey.withOpacity(0.5),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+          items: items.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              selectedDebtor = newValue;
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select $label';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final creditorIconKey = GlobalKey();
-    final debtorIconKey = GlobalKey();
-
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -245,35 +237,28 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
               children: <Widget>[
                 Center(
                   child: Image.asset(
-                    TImages
-                        .logoMain, // Ensure this path matches your asset structure
+                    TImages.logoMain,
                     height: 100,
                   ),
                 ),
-                const SizedBox(height: 10), // Reduced space
+                const SizedBox(height: 10),
                 _buildLabeledTextField(
                   'Creditor',
                   _creditorController,
                   isReadOnly: true,
-                  suffixIcon: Icon(
-                    Icons.info,
-                    size: 20,
-                    color: Colors.grey[600],
-                  ),
-                  iconKey: creditorIconKey,
                 ),
                 const SizedBox(height: 10),
-                _buildLabeledTextField(
-                  'Debtor',
-                  _debtorController,
-                  hintText: 'Name',
-                  suffixIcon: Icon(
-                    Icons.info,
-                    size: 20,
-                    color: Colors.grey[600],
-                  ),
-                  iconKey: debtorIconKey,
-                ),
+                Obx(() {
+                  var friendNames = debtTicketController.friendNames;
+                  if (friendNames.isEmpty) {
+                    return Text('No Friend');
+                  }
+                  return _buildLabeledDropdownField(
+                    'Debtor',
+                    selectedDebtor,
+                    items: friendNames, // Use friendNames directly
+                  );
+                }),
                 const SizedBox(height: 10),
                 _buildLabeledTextField(
                   'Amount',
@@ -307,9 +292,7 @@ class _CreateDebtPageState extends State<CreateDebtPage> {
                       backgroundColor:
                           const Color(0xFFF0CA00).withOpacity(0.82),
                       padding: const EdgeInsets.symmetric(
-                          vertical: 16.0,
-                          horizontal: 20.0) // Adjust padding as needed
-                      ),
+                          vertical: 16.0, horizontal: 20.0)),
                   child: const Text('Submit'),
                 ),
               ],

@@ -6,6 +6,7 @@ import 'package:bucks_buddy/features/payment/screen/approval_screen.dart';
 import 'package:bucks_buddy/features/payment/screen/payment_amount_screen.dart';
 import 'package:bucks_buddy/features/payment/screen/payment_success_screen.dart';
 import 'package:bucks_buddy/features/payment/screen/recipient_reference_screen.dart';
+import 'package:bucks_buddy/utils/api_model/account_enquiry.dart';
 import 'package:bucks_buddy/utils/api_model/credit_transfer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,7 @@ class PaymentController extends GetxController {
   var paymentId = ''.obs;
   var date = ''.obs;
   var phoneNumber = ''.obs;
+  var bankAccountNumber = ''.obs;
 
   //payment amount screen
   Rx<String> responseMessage = ''.obs;
@@ -273,7 +275,7 @@ class PaymentController extends GetxController {
 //approval screen
 
 // start credit transfer api
-  void creditTransferApi() {
+  void creditTransferApi() async {
     try {
       var ticket = debtTicket.value;
       var pembayarBankAccount = debtorBankDetails.value;
@@ -294,7 +296,21 @@ class PaymentController extends GetxController {
           amount: amount.string,
           debtorName: creditorName.string,
           bankAccount: bankAccount.string);
-      creditTransfer.sendPostRequest();
+      await creditTransfer.sendPostRequest();
+    } catch (e) {
+      Get.snackbar('error api', e.toString());
+    }
+  }
+
+  //account Inquiry Api
+  // start credit transfer api
+  Future<void> accountEnquiryApi(String bankAccount, bankAccountNumber) async {
+    try {
+      var bankAccountReal = bankAccount;
+      var accountNumberReal = bankAccountNumber;
+      AccountEnquiry creditTransfer = AccountEnquiry(
+          bankAccount: bankAccountReal, bankAccountNumber: accountNumberReal);
+      await creditTransfer.sendPostRequest();
     } catch (e) {
       Get.snackbar('error api', e.toString());
     }

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:bucks_buddy/features/view_debt_analysis/model/expenses_model.dart';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -25,7 +23,7 @@ class ExpensesController extends GetxController {
   var totalAmountPeoplePaidPersonal = 0.0.obs;
   var totalAmountPeoplePaidOther = 0.0.obs;
 
-  RxBool amountPaid = true.obs;
+  RxBool amountPaid = false.obs;
 
   var uid = ''.obs;
   var totalFoodYouPaid = 0.0.obs;

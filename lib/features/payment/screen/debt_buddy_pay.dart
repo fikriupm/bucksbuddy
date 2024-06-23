@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,6 +14,8 @@ class DebtBuddyPay extends StatelessWidget {
   DebtBuddyPay({required this.debtTicketId});
 
   final PaymentController paymentController = Get.put(PaymentController());
+  var bankAccount;
+  var bankAccountNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -120,11 +124,17 @@ class DebtBuddyPay extends StatelessWidget {
                                       style: TextStyle(
                                           fontWeight: FontWeight.w600),
                                     ),
-                                    Text(
-                                      '${data?['bankAccountNumber'] ?? 'N/A'}',
-                                      style: const TextStyle(
-                                          fontSize: TSizes.fontSizeMd),
-                                    ),
+                                    Obx(() {
+                                      paymentController.bankAccountNumber
+                                          .value = data?['bankAccountNumber'];
+                                      bankAccountNumber = paymentController
+                                          .bankAccountNumber.value;
+                                      return Text(
+                                        '$bankAccountNumber',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeMd),
+                                      );
+                                    })
                                   ],
                                 ),
                                 const SizedBox(height: 20),
@@ -137,11 +147,17 @@ class DebtBuddyPay extends StatelessWidget {
                                       style: TextStyle(
                                           fontWeight: FontWeight.w600),
                                     ),
-                                    Text(
-                                      '${data?['bankAccount'] ?? 'N/A'}',
-                                      style: const TextStyle(
-                                          fontSize: TSizes.fontSizeMd),
-                                    ),
+                                    Obx(() {
+                                      paymentController.bankAccount.value =
+                                          data?['bankAccount'];
+                                      bankAccount =
+                                          paymentController.bankAccount.value;
+                                      return Text(
+                                        '$bankAccount',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeMd),
+                                      );
+                                    }),
                                   ],
                                 ),
                               ],
@@ -159,7 +175,9 @@ class DebtBuddyPay extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await paymentController.accountEnquiryApi(
+                        bankAccount, bankAccountNumber);
                     paymentController.nextPagePaymentAmountScreen();
                   },
                   child: const Text('Next'),
