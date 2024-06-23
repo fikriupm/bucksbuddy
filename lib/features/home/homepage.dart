@@ -16,7 +16,7 @@ class Homepage extends StatelessWidget {
   Homepage({Key? key}) : super(key: key);
 
   final HomeController homeController = Get.put(HomeController());
-  //final ExpensesController expensesController = Get.put(ExpensesController());
+  final ExpensesController expensesController = Get.put(ExpensesController());
 
   @override
   Widget build(BuildContext context) {
