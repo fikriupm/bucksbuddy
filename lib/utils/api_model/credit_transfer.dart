@@ -9,15 +9,17 @@ import 'package:intl/intl.dart';
 
 class CreditTransfer {
   String creditorName;
+  String debtorAccount;
   String creditorAccount;
   String amount;
   String debtorName;
   String bankAccount;
   CreditTransfer(
-      {required this.creditorAccount,
-      required this.creditorName,
+      {required this.creditorName, // org yg kita nk byr
+      required this.debtorAccount,
+      required this.creditorAccount,
       required this.amount,
-      required this.debtorName,
+      required this.debtorName, // org yg kne byr
       required this.bankAccount});
 
   PaymentController paymentController = Get.find();
@@ -43,8 +45,13 @@ class CreditTransfer {
   }
 
 // get dynamic authentication
-  Future<String> getJwsToken(String businessMessageId, String creditorName,
-      String creditorAccount, String amount, String debtorName) async {
+  Future<String> getJwsToken(
+      String businessMessageId,
+      String creditorAccount,
+      String creditorName,
+      String debtorAccount,
+      String amount,
+      String debtorName) async {
     final url =
         '$host/test/helper/jws-token?businessMessageId=$businessMessageId';
     final headers = {'Content-Type': 'application/json'};
@@ -55,7 +62,7 @@ class CreditTransfer {
           "businessMessageId": businessMessageId,
           "createdDateTime": createdDateTime,
           "interbankSettlementAmount": amount,
-          "debtor": {"name": debtorName, "id": '0123456789'},
+          "debtor": {"name": debtorName, "id": debtorAccount},
           "debtorAccount": {
             "id": '0123456789',
             "type": "SVGS",
@@ -68,7 +75,7 @@ class CreditTransfer {
           "creditorAccount": {"id": creditorAccount, "type": "SVGS"},
           "creditor": {
             "name": creditorName,
-            "id": creditorAccount,
+            "id": '0123456789',
             "idType": "01"
           },
           "recipientReference": "Payment Reference",
@@ -96,8 +103,8 @@ class CreditTransfer {
       var businessMessageId = await getBusinessMessageId();
 
       // Get jwsToken
-      var jwsToken = await getJwsToken(
-          businessMessageId, creditorName, creditorAccount, amount, debtorName);
+      var jwsToken = await getJwsToken(businessMessageId, creditorAccount,
+          creditorName, debtorAccount, amount, debtorName);
 
       // Prepare headers
       Map<String, String> headers = {
@@ -115,7 +122,7 @@ class CreditTransfer {
           "businessMessageId": businessMessageId,
           "createdDateTime": createdDateTime,
           "interbankSettlementAmount": amount,
-          "debtor": {'name': debtorName, "id": '0123456789'},
+          "debtor": {'name': debtorName, "id": debtorAccount},
           "debtorAccount": {
             "id": '0123456789',
             "type": "SVGS",
@@ -128,7 +135,7 @@ class CreditTransfer {
           "creditorAccount": {"id": creditorAccount, "type": "SVGS"},
           "creditor": {
             "name": creditorName,
-            "id": creditorAccount,
+            "id": '0123456789',
             "idType": "01"
           },
           "recipientReference": "Payment Reference",
@@ -147,9 +154,11 @@ class CreditTransfer {
       // Check the response status code
       if (response.statusCode == 200) {
         print('Success: ${response.body}');
+        print(
+            'RM $amount successful deducted from $bankAccount ($debtorAccount) to $debtorName');
         Get.snackbar(
           'Payment Successful',
-          'RM $amount successful deducted from $bankAccount ($creditorAccount) to $debtorName',
+          'RM $amount successful deducted from $bankAccount ($debtorAccount) to $debtorName',
           //nnti tukar gambar yg sesuai
           icon: const Padding(
             padding: EdgeInsets.only(top: 15.0, left: 8.0),
@@ -171,7 +180,7 @@ class CreditTransfer {
         print('Response Body: ${response.body}');
         Get.snackbar(
           'Failed',
-          'RM $amount failed to deducted from $bankAccount ($creditorAccount) to $debtorName',
+          'RM $amount failed to deducted from $bankAccount ($debtorAccount) to $debtorName',
           //nnti tukar gambar yg sesuai
           icon: const Image(
             image: AssetImage(TImages.duitnow),

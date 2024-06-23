@@ -16,12 +16,15 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
   void initState() {
     super.initState();
 
-    // Call addPaymentDetails once when the screen initializes
-    paymentController.addPaymentDetails();
+    // Use WidgetsBinding.instance.addPostFrameCallback to delay state change
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      paymentController.addPaymentDetails();
+      paymentController.updateDebtStatus();
 
-    // Start a timer that navigates to the next screen after 3 seconds
-    Timer(const Duration(seconds: 3), () {
-      Get.off(() => PaymentGeneratedScreen());
+      // Start a timer that navigates to the next screen after 3 seconds
+      Timer(const Duration(seconds: 3), () {
+        Get.off(() => PaymentGeneratedScreen());
+      });
     });
   }
 

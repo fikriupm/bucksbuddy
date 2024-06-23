@@ -18,34 +18,35 @@ class ViewAllDebtOwnScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('All Debt Tickets'),
+        title: const Text('All Debt Tickets'),
       ),
       body: FutureBuilder<List<DebtTicket>>(
         future: _debtTicketController.fetchDebtTicketsOwn(debtorUsername),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No debt tickets found.'));
+            return const Center(child: Text('No debt tickets found.'));
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 DebtTicket ticket = snapshot.data![index];
                 return Container(
-                  padding: EdgeInsets.all(20),
-                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 40),
+                  padding: const EdgeInsets.all(20),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 40),
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(219, 229, 199, 2), // Gold color
+                    color: const Color.fromARGB(219, 229, 199, 2), // Gold color
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
                         spreadRadius: 4,
                         blurRadius: 8,
-                        offset: Offset(0, 4),
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
@@ -57,8 +58,8 @@ class ViewAllDebtOwnScreen extends StatelessWidget {
                         children: [
                           Text(
                             'ID: ${ticket.debtTicketId}',
-                            style: TextStyle(
-                              color: const Color.fromARGB(255, 99, 99, 99),
+                            style: const TextStyle(
+                              color: Color.fromARGB(255, 99, 99, 99),
                               fontSize: 12,
                             ),
                           ),
@@ -72,7 +73,7 @@ class ViewAllDebtOwnScreen extends StatelessWidget {
                                 ),
                               );
                             },
-                            child: Text('Details >'),
+                            child: const Text('Details >'),
                             style: TextButton.styleFrom(
                               foregroundColor:
                                   const Color.fromARGB(255, 253, 253, 253),
@@ -82,43 +83,43 @@ class ViewAllDebtOwnScreen extends StatelessWidget {
                       ),
                       Text(
                         'From: ${ticket.creditor}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
                         ),
                       ),
                       Text(
                         'RM${ticket.amount}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Row(
                         children: [
                           Expanded(
                             child: Row(
                               children: [
-                                Icon(Icons.calendar_month, size: 20),
-                                SizedBox(width: 5),
+                                const Icon(Icons.calendar_month, size: 20),
+                                const SizedBox(width: 5),
                                 Text(
                                   DateFormat.yMd().format(DateTime.parse(
                                       ticket.dateTime)), // Format the date
-                                  style: TextStyle(fontSize: 16),
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(width: 20),
+                          const SizedBox(width: 20),
                           Expanded(
                             child: Row(
                               children: [
-                                Icon(Icons.access_time, size: 20),
-                                SizedBox(width: 5),
+                                const Icon(Icons.access_time, size: 20),
+                                const SizedBox(width: 5),
                                 Text(
                                   DateFormat.Hms().format(DateTime.parse(
                                       ticket.dateTime)), // Format the time
-                                  style: TextStyle(fontSize: 16),
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                               ],
                             ),

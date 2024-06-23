@@ -1,6 +1,7 @@
 import 'package:bucks_buddy/common/styles/spacing_styles.dart';
 import 'package:bucks_buddy/features/view_debt_analysis/controller/expenses_controller.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
+import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,8 +9,7 @@ import 'package:get/get.dart';
 class Expenses extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final ExpensesController expensesController = Get.put(ExpensesController());
-
+    final ExpensesController expensesController = Get.find();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -56,7 +56,7 @@ class Expenses extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            "You Owe",
+                            "Amount Receive",
                             style: TextStyle(color: Colors.grey),
                           ),
                           const SizedBox(
@@ -64,18 +64,22 @@ class Expenses extends StatelessWidget {
                           ),
                           Obx(() {
                             try {
-                              var youOwnDebt =
-                                  expensesController.totalAmountYouOwn.value;
+                              var youOwnDebt = expensesController
+                                  .totalAmountYouReceive.value;
                               return Text(
-                                'RM $youOwnDebt',
+                                'RM ${youOwnDebt.toStringAsFixed(2)}',
                                 style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'Roboto'),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Roboto',
+                                ),
                               );
                             } catch (e) {
-                              print('error you owe: ${e.toString()}');
-                              return const CircularProgressIndicator.adaptive();
+                              print('Error fetching data: ${e.toString()}');
+                              return Text(
+                                'Error: ${e.toString()}',
+                                style: TextStyle(color: Colors.red),
+                              );
                             }
                           }),
                         ],
@@ -99,7 +103,7 @@ class Expenses extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            "Owe You",
+                            "Amount Paid",
                             style: TextStyle(color: Colors.grey),
                           ),
                           const SizedBox(
@@ -108,9 +112,9 @@ class Expenses extends StatelessWidget {
                           Obx(() {
                             try {
                               var ownYouDebt =
-                                  expensesController.totalAmountOwnYou.value;
+                                  expensesController.totalAmountYouPaid.value;
                               return Text(
-                                'RM $ownYouDebt',
+                                'RM ${ownYouDebt.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w600,
@@ -146,12 +150,12 @@ class Expenses extends StatelessWidget {
                         children: [
                           Obx(() {
                             return Wrap(
-                              spacing: 10,
+                              spacing: 2,
                               children: [
                                 Row(
                                   children: [
                                     Radio(
-                                      value: 'You Owe',
+                                      value: 'Amount Receive',
                                       groupValue: expensesController
                                           .radioSelectedValue.value,
                                       onChanged: (value) {
@@ -159,13 +163,13 @@ class Expenses extends StatelessWidget {
                                             .radioSelected(value!);
                                       },
                                     ),
-                                    const Text('You Owe'),
+                                    const Text('Amount Receive'),
                                   ],
                                 ),
                                 Row(
                                   children: [
                                     Radio(
-                                      value: 'Owe You',
+                                      value: 'Amount Paid',
                                       groupValue: expensesController
                                           .radioSelectedValue.value,
                                       onChanged: (value) {
@@ -173,7 +177,7 @@ class Expenses extends StatelessWidget {
                                             .radioSelected(value!);
                                       },
                                     ),
-                                    const Text('Owe You'),
+                                    const Text('Amount Paid'),
                                   ],
                                 ),
                               ],
@@ -193,34 +197,7 @@ class Expenses extends StatelessWidget {
                   height: 200,
                   child: Stack(
                     children: [
-                      PieChart(
-                        PieChartData(
-                          startDegreeOffset: 0,
-                          sectionsSpace: 0,
-                          centerSpaceRadius: 100,
-                          sections: [
-                            PieChartSectionData(
-                              value: expensesController.highestPercent.value,
-                              color: Colors.amberAccent,
-                              radius: 45,
-                              showTitle: false,
-                            ),
-                            PieChartSectionData(
-                              value:
-                                  expensesController.secondHighestPercent.value,
-                              color: const Color.fromRGBO(68, 119, 249, 1),
-                              radius: 25,
-                              showTitle: false,
-                            ),
-                            PieChartSectionData(
-                              value: expensesController.lastPercent.value,
-                              color: const Color.fromARGB(255, 242, 24, 42),
-                              radius: 20,
-                              showTitle: false,
-                            ),
-                          ],
-                        ),
-                      ),
+                      paiChart(expensesController),
                       Positioned.fill(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -245,12 +222,21 @@ class Expenses extends StatelessWidget {
                         ),
                       ),
                       Obx(() {
+                        bool amountPaid = expensesController.amountPaid
+                            .value; // Replace with your actual condition
                         return Center(
-                          child: Text(
-                            expensesController.highestPercent.value.toString(),
-                            style: const TextStyle(fontSize: TSizes.fontSizeLg),
-                          ),
-                        );
+                            child: amountPaid
+                                ? Text(
+                                    '${expensesController.highestPercentYouPaid.toStringAsFixed(2)}%', //highest percentage
+                                    style: const TextStyle(
+                                        fontSize: TSizes.fontSizeLg),
+                                  )
+                                : Text(
+                                    '${expensesController.highestPercentYouReceive.toStringAsFixed(2)}%',
+                                    style: const TextStyle(
+                                        fontSize: TSizes.fontSizeLg),
+                                  ) // Show CircularProgressIndicator when condition is false
+                            );
                       })
                     ],
                   ),
@@ -273,20 +259,44 @@ class Expenses extends StatelessWidget {
                                 color: const Color.fromARGB(255, 242, 24, 42)),
                           ),
                           const SizedBox(
-                            width: TSizes.spaceBtwItems,
+                            width: TSizes.spaceBtwInputFields,
                           ),
-                          const Text(
-                            'Food',
-                            style: TextStyle(color: Colors.grey),
-                          )
+                          Obx(() {
+                            bool amountPaid = expensesController.amountPaid
+                                .value; // Replace with your actual condition
+                            return Center(
+                                child: amountPaid
+                                    ? Text(
+                                        '${expensesController.lastCategoryYouPaid.value}',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeSm),
+                                      )
+                                    : Text(
+                                        '${expensesController.lastCategoryYouReceive.value}',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeSm),
+                                      ) // Show CircularProgressIndicator when condition is false
+                                );
+                          })
                         ],
                       ),
-                      Row(
-                        children: [
-                          Text(
-                              '${expensesController.totalAmountOwnYouFood.value}')
-                        ],
-                      )
+                      Obx(() {
+                        bool amountPaid = expensesController.amountPaid
+                            .value; // Replace with your actual condition
+                        return Center(
+                            child: amountPaid
+                                ? Text(
+                                    'RM ${expensesController.lastRmYouPaid.value.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontSize: TSizes.fontSizeMd),
+                                  )
+                                : Text(
+                                    'RM ${expensesController.lastRmYouReceive.value.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontSize: TSizes.fontSizeMd),
+                                  ) // Show CircularProgressIndicator when condition is false
+                            );
+                      })
                     ],
                   ),
                   Column(
@@ -303,19 +313,44 @@ class Expenses extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(
-                            width: TSizes.spaceBtwItems,
+                            width: TSizes.spaceBtwInputFields,
                           ),
-                          const Text(
-                            'Personal',
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
-                          )
+                          Obx(() {
+                            bool amountPaid = expensesController.amountPaid
+                                .value; // Replace with your actual condition
+                            return Center(
+                                child: amountPaid
+                                    ? Text(
+                                        '${expensesController.secondCategoryYouPaid.value}',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeSm),
+                                      )
+                                    : Text(
+                                        '${expensesController.secondCategoryYouReceive.value}',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeSm),
+                                      ) // Show CircularProgressIndicator when condition is false
+                                );
+                          })
                         ],
                       ),
-                      const Row(
-                        children: [Text("RM13,020")],
-                      )
+                      Obx(() {
+                        bool amountPaid = expensesController.amountPaid.value;
+                        ; // Replace with your actual condition
+                        return Center(
+                            child: amountPaid
+                                ? Text(
+                                    'RM ${expensesController.secondHighestRmYouPaid.value.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontSize: TSizes.fontSizeMd),
+                                  )
+                                : Text(
+                                    'RM ${expensesController.secondHighestRmYouReceive.value.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontSize: TSizes.fontSizeMd),
+                                  ) // Show CircularProgressIndicator when condition is false
+                            );
+                      })
                     ],
                   ),
                   Column(
@@ -334,19 +369,43 @@ class Expenses extends StatelessWidget {
                           const SizedBox(
                             width: TSizes.spaceBtwItems,
                           ),
-                          const Text(
-                            'Other',
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
-                          )
+                          Obx(() {
+                            bool amountPaid =
+                                expensesController.amountPaid.value;
+                            return Center(
+                                child: amountPaid
+                                    ? Text(
+                                        '${expensesController.highestCategoryYouPaid.value}',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeSm),
+                                      )
+                                    : Text(
+                                        '${expensesController.highestCategoryYouReceive.value}',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeSm),
+                                      ) // Show CircularProgressIndicator when condition is false
+                                );
+                          })
                         ],
                       ),
                       Row(
                         children: [
                           Obx(() {
-                            return Text(
-                                '${expensesController.totalAmountOwnYouOther.value}');
+                            bool amountPaid = expensesController.amountPaid
+                                .value; // Replace with your actual condition
+                            return Center(
+                                child: amountPaid
+                                    ? Text(
+                                        'RM ${expensesController.highestRmYouPaid.value.toStringAsFixed(2)}',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeMd),
+                                      )
+                                    : Text(
+                                        'RM ${expensesController.highestRmYouReceive.value.toStringAsFixed(2)}',
+                                        style: const TextStyle(
+                                            fontSize: TSizes.fontSizeMd),
+                                      ) // Show CircularProgressIndicator when condition is false
+                                );
                           })
                         ],
                       )
@@ -358,7 +417,45 @@ class Expenses extends StatelessWidget {
           ),
         ),
       ),
-      // bottomNavigationBar: NavigationMenu(),
     );
+  }
+
+  Obx paiChart(ExpensesController expensesController) {
+    return Obx(() {
+      bool amountPaid = expensesController.amountPaid.value;
+      return PieChart(
+        PieChartData(
+          startDegreeOffset: 0,
+          sectionsSpace: 0,
+          centerSpaceRadius: 100,
+          sections: [
+            PieChartSectionData(
+              value: amountPaid
+                  ? expensesController.highestPercentYouPaid.value
+                  : expensesController.highestPercentYouReceive.value,
+              color: Colors.amberAccent,
+              radius: 45,
+              showTitle: false,
+            ),
+            PieChartSectionData(
+              value: amountPaid
+                  ? expensesController.secondHighestPercentYouPaid.value
+                  : expensesController.secondHighestPercentYouReceive.value,
+              color: const Color.fromRGBO(68, 119, 249, 1),
+              radius: 25,
+              showTitle: false,
+            ),
+            PieChartSectionData(
+              value: amountPaid
+                  ? expensesController.lastPercentYouPaid.value
+                  : expensesController.lastPercentYouReceive.value,
+              color: const Color.fromARGB(255, 242, 24, 42),
+              radius: 20,
+              showTitle: false,
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

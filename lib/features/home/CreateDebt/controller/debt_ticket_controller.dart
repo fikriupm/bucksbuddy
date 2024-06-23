@@ -4,6 +4,7 @@ import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dar
 import 'package:bucks_buddy/features/home/homepage.dart';
 import 'package:bucks_buddy/features/personalization/controllers/user_controller.dart';
 import 'package:bucks_buddy/features/personalization/controllers/bank_account_controller.dart';
+import 'package:bucks_buddy/navigation_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class DebtTicketController extends GetxController {
   final UserController userController = UserController.instance;
   final BankAccountController bankAccountController =
       BankAccountController.instance;
+  var isPaid = true.obs;
 
   Future<void> saveDebtTicket(DebtTicket ticket, String username) async {
     try {
@@ -70,7 +72,8 @@ class DebtTicketController extends GetxController {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-          builder: (context) => const Homepage()), // Adjust the HomePage path
+          builder: (context) =>
+              const NavigationMenu()), // Adjust the HomePage path
       (route) => false,
     );
   }
@@ -152,10 +155,10 @@ class DebtTicketController extends GetxController {
 
             // Map data to DebtTicket model
             DebtTicket ticket = DebtTicket.fromJson(data);
-            debtTickets.add(ticket);;
+            debtTickets.add(ticket);
+            ;
           }
-        } else {
-        }
+        } else {}
       }
 
       return debtTickets;
@@ -165,87 +168,85 @@ class DebtTicketController extends GetxController {
   }
 
   Future<DebtTicket?> fetchDebtTickeCreatedtById(String ticketId) async {
-  try {
-    // Ensure ticketId is not empty
-    if (ticketId.isEmpty) {
-      throw Exception('The ticketId provided is empty.');
-    }
-
-    // Retrieve all user documents from the 'Users' collection
-    QuerySnapshot<Map<String, dynamic>> usersSnapshot =
-        await FirebaseFirestore.instance.collection('Users').get();
-
-    // Iterate through each user document
-    for (var userDoc in usersSnapshot.docs) {
-      String userId = userDoc.id;
-
-      // Query the 'DebtTickets' subcollection for the current user by ticketId field
-      QuerySnapshot<Map<String, dynamic>> ticketQuerySnapshot =
-          await FirebaseFirestore.instance
-              .collection('Users')
-              .doc(userId)
-              .collection('DebtTickets')
-              .where('debtTicketId', isEqualTo: ticketId)
-              .get();
-
-      // Check if any documents are found
-      if (ticketQuerySnapshot.docs.isNotEmpty) {
-
-        // Assuming only one document will match
-        var ticketDocSnapshot = ticketQuerySnapshot.docs.first;
-        Map<String, dynamic> data = ticketDocSnapshot.data();
-
-        // Map data to DebtTicket model
-        DebtTicket ticket = DebtTicket.fromJson(data);
-        return ticket;
+    try {
+      // Ensure ticketId is not empty
+      if (ticketId.isEmpty) {
+        throw Exception('The ticketId provided is empty.');
       }
-    }
-    return null;
-  } catch (e) {
-    throw Exception('Error fetching debt ticket by ID: $e');
-  }
-}
 
-Future<DebtTicket?> fetchDebtTickeToPaytById(String ticketId) async {
-  try {
-    // Ensure ticketId is not empty
-    if (ticketId.isEmpty) {
-      throw Exception('The ticketId provided is empty.');
-    }
-    // Retrieve all user documents from the 'Users' collection
-    QuerySnapshot<Map<String, dynamic>> usersSnapshot =
-        await FirebaseFirestore.instance.collection('Users').get();
+      // Retrieve all user documents from the 'Users' collection
+      QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+          await FirebaseFirestore.instance.collection('Users').get();
 
-    // Iterate through each user document
-    for (var userDoc in usersSnapshot.docs) {
-      String userId = userDoc.id;
-      // Query the 'DebtTickets' subcollection for the current user by ticketId field
-      QuerySnapshot<Map<String, dynamic>> ticketQuerySnapshot =
-          await FirebaseFirestore.instance
-              .collection('Users')
-              .doc(userId)
-              .collection('DebtTickets')
-              .where('debtTicketId', isEqualTo: ticketId)
-              .get();
+      // Iterate through each user document
+      for (var userDoc in usersSnapshot.docs) {
+        String userId = userDoc.id;
 
-      // Check if any documents are found
-      if (ticketQuerySnapshot.docs.isNotEmpty) {
-        // Assuming only one document will match
-        var ticketDocSnapshot = ticketQuerySnapshot.docs.first;
-        Map<String, dynamic> data = ticketDocSnapshot.data();
+        // Query the 'DebtTickets' subcollection for the current user by ticketId field
+        QuerySnapshot<Map<String, dynamic>> ticketQuerySnapshot =
+            await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(userId)
+                .collection('DebtTickets')
+                .where('debtTicketId', isEqualTo: ticketId)
+                .get();
 
-        // Map data to DebtTicket model
-        DebtTicket ticket = DebtTicket.fromJson(data);
-        return ticket;
+        // Check if any documents are found
+        if (ticketQuerySnapshot.docs.isNotEmpty) {
+          // Assuming only one document will match
+          var ticketDocSnapshot = ticketQuerySnapshot.docs.first;
+          Map<String, dynamic> data = ticketDocSnapshot.data();
+
+          // Map data to DebtTicket model
+          DebtTicket ticket = DebtTicket.fromJson(data);
+          return ticket;
+        }
       }
+      return null;
+    } catch (e) {
+      throw Exception('Error fetching debt ticket by ID: $e');
     }
-
-    return null;
-  } catch (e) {
-    throw Exception('Error fetching debt ticket by ID: $e');
   }
-}
 
+  Future<DebtTicket?> fetchDebtTickeToPaytById(String ticketId) async {
+    try {
+      // Ensure ticketId is not empty
+      if (ticketId.isEmpty) {
+        throw Exception('The ticketId provided is empty.');
+      }
+      // Retrieve all user documents from the 'Users' collection
+      QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+          await FirebaseFirestore.instance.collection('Users').get();
+
+      // Iterate through each user document
+      for (var userDoc in usersSnapshot.docs) {
+        String userId = userDoc.id;
+        // Query the 'DebtTickets' subcollection for the current user by ticketId field
+        QuerySnapshot<Map<String, dynamic>> ticketQuerySnapshot =
+            await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(userId)
+                .collection('DebtTickets')
+                .where('debtTicketId', isEqualTo: ticketId)
+                .get();
+
+        // Check if any documents are found
+        if (ticketQuerySnapshot.docs.isNotEmpty) {
+          // Assuming only one document will match
+          var ticketDocSnapshot = ticketQuerySnapshot.docs.first;
+          Map<String, dynamic> data = ticketDocSnapshot.data();
+
+          // Map data to DebtTicket model
+          DebtTicket ticket = DebtTicket.fromJson(data);
+          return ticket;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      throw Exception('Error fetching debt ticket by ID: $e');
+    }
+  }
 
   Future<void> fetchAllDebtTickets(String userId) async {
     try {

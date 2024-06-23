@@ -2,7 +2,6 @@ import 'package:bucks_buddy/features/home/CreateDebt/controller/debt_ticket_cont
 import 'package:bucks_buddy/features/home/CreateDebt/createDebt.dart';
 import 'package:bucks_buddy/features/home/screens/widget/view_all_debt_own.dart';
 import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
-import 'package:bucks_buddy/features/payment/screen/DebtBuddyPayApps.dart';
 import 'package:bucks_buddy/utils/constants/image_strings.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -48,10 +47,11 @@ class QuickActionIcon extends StatelessWidget {
     super.key,
   });
 
-@override
+  @override
   Widget build(BuildContext context) {
-    final PaymentController paymentController = Get.put(PaymentController());
-    final DebtTicketController debtTicketController = Get.put(DebtTicketController());
+    Get.put(PaymentController());
+    final DebtTicketController debtTicketController =
+        Get.put(DebtTicketController());
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -95,10 +95,13 @@ class QuickActionIcon extends StatelessWidget {
           child: IconButton(
               onPressed: () async {
                 try {
-                  String debtorUsername = await debtTicketController.fetchCurrentUsername(); // Fetch username from Firestore
+                  String debtorUsername = await debtTicketController
+                      .fetchCurrentUsername(); // Fetch username from Firestore
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ViewAllDebtOwnScreen(debtorUsername: debtorUsername)),
+                    MaterialPageRoute(
+                        builder: (context) => ViewAllDebtOwnScreen(
+                            debtorUsername: debtorUsername)),
                   );
                 } catch (e) {
                   // Handle error if username fetching fails
@@ -140,17 +143,19 @@ class QuickActionText extends StatelessWidget {
     );
   }
 }
+
 Future<String> _fetchUsername() async {
   try {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(user.uid)
-        .get();
-      
+          .collection('Users')
+          .doc(user.uid)
+          .get();
+
       if (userDoc.exists) {
-        return userDoc['Username'] as String; // Adjust based on your actual field name in Firestore
+        return userDoc['Username']
+            as String; // Adjust based on your actual field name in Firestore
       } else {
         throw Exception('User document does not exist.');
       }

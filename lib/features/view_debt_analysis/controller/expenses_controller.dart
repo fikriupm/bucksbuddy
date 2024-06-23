@@ -1,43 +1,72 @@
 import 'dart:ffi';
 
-import 'package:bucks_buddy/features/personalization/controllers/user_controller.dart';
 import 'package:bucks_buddy/features/view_debt_analysis/model/expenses_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/get_rx.dart';
 
 class ExpensesController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final RxList<ExpensesModel> expenses = <ExpensesModel>[].obs;
-  UserController userController = Get.find();
-
   var selectedValue = 'Month'.obs;
-  var totalAmountYouOwn = 0.0.obs; // Make totalAmount an observable
-  var totalAmountOwnYou = 0.0.obs;
-  var totalAmountOwnYouFood = 0.0.obs; // Make totalAmount an observable
-  var totalAmountOwnYouPersonal = 0.0.obs; // Make totalAmount an observable
-  var totalAmountOwnYouOther = 0.0.obs; // Make totalAmount an observable
-//pai percentage
-  var highestPercent = 0.0.obs;
-  var secondHighestPercent = 0.0.obs;
-  var lastPercent = 0.0.obs;
+  //var totalAmountYouOwn = 0.0.obs; // Make totalAmount an observable
+  var totalAmountYouPaid = 0.0.obs;
+  var totalAmountYouReceive = 0.0.obs;
+  var totalAmountYouOwnFood = 0.0.obs; // Make totalAmount an observable
+  var totalAmountYouOwnPersonal = 0.0.obs; // Make totalAmount an observable
+  var totalAmountYouOwnOther = 0.0.obs; // Make totalAmount an observable
+  var totalAmountPaidFood = 0.0.obs; // Make totalAmount an observable
+  var totalAmountPaidPersonal = 0.0.obs; // Make totalAmount an observable
+  var totalAmountPaidOther = 0.0.obs;
+  var isLoading = true.obs; // Initialize as true to show loading indicator
+  var totalAmountPeoplePaidFood = 0.0.obs;
+  var totalAmountPeoplePaidPersonal = 0.0.obs;
+  var totalAmountPeoplePaidOther = 0.0.obs;
 
-  var highestCategory = ''.obs;
-  var secondCategory = ''.obs;
-  var lastPercentCategory = ''.obs;
+  RxBool amountPaid = true.obs;
 
   var uid = ''.obs;
-  var totalFood = 0.0.obs;
-  var totalPersonal = 0.0.obs;
-  var totalOther = 0.0.obs;
+  var totalFoodYouPaid = 0.0.obs;
+  var totalPersonalYouPaid = 0.0.obs;
+  var totalOtherYouPaid = 0.0.obs;
 
-  //
-  var radioSelectedValue = ''.obs;
+  var totalFoodPeoplePaid = 0.0.obs;
+  var totalPersonalPeoplePaid = 0.0.obs;
+  var totalOtherPeoplePaid = 0.0.obs;
+
+// total percent for each category
+  var highestPercentYouReceive = 0.0.obs;
+  var secondHighestPercentYouReceive = 0.0.obs;
+  var lastPercentYouReceive = 0.0.obs;
+
+  var radioSelectedValue = 'Amount Paid'.obs;
+  var highestPercentYouPaid = 0.0.obs;
+  var secondHighestPercentYouPaid = 0.0.obs;
+  var lastPercentYouPaid = 0.0.obs;
+  get lastPercentCategory => null;
+
+  //amount paid category
+  var highestCategoryYouPaid = ''.obs;
+  var secondCategoryYouPaid = ''.obs;
+  var lastCategoryYouPaid = ''.obs;
+  var highestRmYouPaid = 0.0.obs;
+  var secondHighestRmYouPaid = 0.0.obs;
+  var lastRmYouPaid = 0.0.obs;
+
+  //amount receive category
+  var highestCategoryYouReceive = ''.obs;
+  var secondCategoryYouReceive = ''.obs;
+  var lastCategoryYouReceive = ''.obs;
+  var highestRmYouReceive = 0.0.obs;
+  var secondHighestRmYouReceive = 0.0.obs;
+  var lastRmYouReceive = 0.0.obs;
 
   @override
   void onInit() {
     super.onInit();
     loadCurrentUserData();
+    radioSelected('Amount Receive');
   }
 
   @override
@@ -56,61 +85,55 @@ class ExpensesController extends GetxController {
     }
   }
 
-  Future<void> loadExpensesYouOwn(String debtorName) async {
-    String debtorYouOwn = debtorName;
+//payment you made
+  Future<double> paymentAmountYouPaid() async {
     try {
-      // Retrieve all user documents from the 'Users' collection
-      QuerySnapshot<Map<String, dynamic>> usersSnapshot =
-          await FirebaseFirestore.instance.collection('Users').get();
+      isLoading.value = true; // Set loading to true before fetching data
 
-      // Reset totalAmount for each call
-      totalAmountYouOwn.value = 0;
+      // Simulate loading delay (replace with actual async data fetching)
+      await Future.delayed(const Duration(seconds: 3));
 
-      // Iterate through each user document
-      for (var userDoc in usersSnapshot.docs) {
-        String userId = userDoc.id;
-
-        // Query the 'DebtTickets' subcollection for the current user
-        QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
-            await FirebaseFirestore.instance
-                .collection('Users')
-                .doc(userId)
-                .collection('DebtTickets')
-                .where('debtor', isEqualTo: debtorYouOwn)
-                .get();
-
-        // Check if there are any matching documents
-        if (debtTicketsSnapshot.docs.isNotEmpty) {
-          print('Successfully completed for user: $userId');
-          for (var docSnapshot in debtTicketsSnapshot.docs) {
-            Map<String, dynamic> data = docSnapshot.data();
-
-            // Access specific fields
-            var amount = data['amount'] ?? 0; // Make this variable type dynamic
-            var creditor = data['creditor'] ?? '';
-            // Convert amount to double if it's a String
-            if (amount is String) {
-              amount = double.tryParse(amount) ?? 0.0;
-            }
-
-            // Sum the amounts
-            if (amount is num) {
-              totalAmountYouOwn.value += amount.toDouble();
-            }
-
-            print('Document ID: ${docSnapshot.id}');
-            print('Creditor: $creditor');
-            print('Amount $debtorYouOwn berhutang dgn $creditor: $amount');
-          }
-        } else {
-          print('No documents found matching the query for user: $userId');
-        }
-      }
-
-      // Print the total amount
-      print('Total Amount ko berhutang: ${totalAmountYouOwn.value}');
+      totalAmountYouOwnFood.value = await loadPaymentYouPaidForFood();
+      totalAmountYouOwnOther.value = await loadPaymentYouPaidForOther();
+      totalAmountYouOwnPersonal.value = await loadPaymentYouPaidForPersonal();
+      totalAmountYouPaid.value = totalAmountYouOwnFood.value +
+          totalAmountYouOwnOther.value +
+          totalAmountYouOwnPersonal.value;
+      isLoading.value = false;
+      return totalAmountYouPaid.value;
     } catch (e) {
-      print('Error completing: $e');
+      print('Error loading payment amounts: $e');
+      isLoading.value = false;
+      return 0;
+    }
+  }
+
+  //payment you receive
+  Future<double> paymentAmountYouReceive() async {
+    try {
+      isLoading.value = true; // Set loading to true before fetching data
+
+      // Simulate loading delay (replace with actual async data fetching)
+      await Future.delayed(const Duration(seconds: 3));
+
+      totalAmountPeoplePaidFood.value = await loadPaymentPeoplePaidForFood();
+      totalAmountPeoplePaidOther.value = await loadPaymentPeoplePayForOther();
+      totalAmountPeoplePaidPersonal.value =
+          await loadPaymentPeoplePayForPersonal();
+      totalAmountYouReceive.value = totalAmountPeoplePaidFood.value +
+          totalAmountPeoplePaidOther.value +
+          totalAmountPeoplePaidPersonal.value;
+      print('totalAmountforfoood ${totalAmountPeoplePaidFood.value}');
+      print('totalAmountfor other ${totalAmountPeoplePaidOther.value}');
+      print('totalAmountfor personal ${totalAmountPeoplePaidPersonal.value}');
+      print(totalAmountYouReceive.value);
+      isLoading.value = false;
+
+      return totalAmountYouReceive.value;
+    } catch (e) {
+      print('Error loading payment amounts: $e');
+      isLoading.value = false;
+      return 0;
     }
   }
 
@@ -127,15 +150,16 @@ class ExpensesController extends GetxController {
 
         // Step 3: Assign the fetched document to the Rx variable
         if (snapshot.exists) {
-          String debtorName = snapshot['Username'];
-          //print('debtorName: $debtorName');
-          loadExpensesYouOwn(debtorName);
+          // String debtorName = snapshot['Username'];
+          // print('debtorName: $debtorName');
 
           //for own you = org yg berhutang dgn kita
           String username = snapshot['Username'];
           String name = snapshot['Name'];
           String creditor = '$username / $name';
-          loadExpensesOwnYou(creditor);
+          // loadExpensesOwnYou(creditor);
+          paymentAmountYouPaid();
+          paymentAmountYouReceive();
           print('Creditor: $creditor');
         } else {
           print('Document does not exist');
@@ -146,77 +170,91 @@ class ExpensesController extends GetxController {
     }
   }
 
-  //for Own You
-
-  Future<void> loadExpensesOwnYou(String creditor) async {
-    String creditorName = creditor;
-    try {
-      // Query the 'DebtTickets' subcollection for the current user
-      QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
-          await FirebaseFirestore.instance
-              .collection('Users')
-              .doc(uid.value)
-              .collection('DebtTickets')
-              .where('creditor', isEqualTo: creditorName)
-              .get();
-
-      // Check if there are any matching documents
-      if (debtTicketsSnapshot.docs.isNotEmpty) {
-        for (var docSnapshot in debtTicketsSnapshot.docs) {
-          String debtorOwnYou;
-          Map<String, dynamic> data = docSnapshot.data();
-
-          // Access specific fields
-          debtorOwnYou = data['debtor'] ?? 'No creditor';
-          var amount = data['amount'] ?? 0; // Make this variable type dynamic
-
-          // Convert amount to double if it's a String
-          if (amount is String) {
-            amount = double.tryParse(amount) ?? 0.0;
-          }
-
-          // Sum the amounts
-          if (amount is num) {
-            totalAmountOwnYou.value += amount.toDouble();
-          }
-
-          print('Document ID: ${docSnapshot.id}');
-          print('Debtor: $debtorOwnYou');
-          print('Amount $debtorOwnYou berhutang dgn $creditorName: $amount');
-        }
-      } else {
-        print('No documents found matching the query for $creditorName');
-      }
-
-      // Print the total amount
-      print('Total Amount org hutang ko: ${totalAmountOwnYou.value}');
-    } catch (e) {
-      print('Error completing: $e');
-    }
-  }
-
   Future<void> radioSelected(String value) async {
     radioSelectedValue.value = value;
-    if (radioSelectedValue.value == 'You Owe') {
-      //sambung esok
-      print('You Owe');
-    } else if (radioSelectedValue.value == 'Owe You') {
-      totalFood.value = await loadPaymentMadeForFood();
-      totalPersonal.value = await loadPaymentMadeForPersonal();
-      totalOther.value = await loadPaymentMadeForOther();
-      print('Total Food ${totalFood.value}');
-      print('Total Personal ${totalPersonal.value}');
-      print('Total other ${totalOther.value}');
-      determineHighestSecondAndLast();
+    if (radioSelectedValue.value == 'Amount Paid') {
+      amountPaid.value = true;
+
+      //amount u paid
+
+      highestPercentYouPaid.value = highestPercentYouPaid.value;
+      totalFoodYouPaid.value = await loadPaymentYouPaidForFood();
+      totalPersonalYouPaid.value = await loadPaymentYouPaidForPersonal();
+      totalOtherYouPaid.value = await loadPaymentYouPaidForOther();
+      print('Total Food ${totalFoodYouPaid.value}');
+      print('Total Personal ${totalPersonalYouPaid.value}');
+      print('Total other ${totalOtherYouPaid.value}');
+      determineHighestSecondAndLastYouPaid();
+    } else if (radioSelectedValue.value == 'Amount Receive') {
+      amountPaid.value = false;
+
+//amount u receive
+      highestPercentYouReceive.value = highestPercentYouReceive.value;
+
+      totalFoodPeoplePaid.value = await loadPaymentPeoplePaidForFood();
+      totalPersonalPeoplePaid.value = await loadPaymentPeoplePayForPersonal();
+      totalOtherPeoplePaid.value = await loadPaymentPeoplePayForOther();
+      print('Total Food ${totalFoodPeoplePaid.value}');
+      print('Total Personal ${totalPersonalPeoplePaid.value}');
+      print('Total other ${totalOtherPeoplePaid.value}');
+      determineHighestSecondAndLastYouReceive();
     }
   }
 
-  void determineHighestSecondAndLast() {
+//determine category score for amount receive
+  void determineHighestSecondAndLastYouReceive() {
     // Create a list of tuples containing the category and the corresponding value
     List<Map<String, dynamic>> values = [
-      {'category': 'Food', 'value': totalFood.value},
-      {'category': 'Personal', 'value': totalPersonal.value},
-      {'category': 'Other', 'value': totalOther.value},
+      {'category': 'Food', 'value': totalFoodPeoplePaid.value},
+      {'category': 'Personal', 'value': totalPersonalPeoplePaid.value},
+      {'category': 'Other', 'value': totalOtherPeoplePaid.value},
+    ];
+    // Sort the list based on the value in descending order
+    values.sort((a, b) => b['value'].compareTo(a['value']));
+
+    // Extract the highest, second highest, and last
+    var highest = values[0];
+    var secondHighest = values[1];
+    var last = values[2];
+
+    //convert to percentage
+    double totalValue = totalFoodPeoplePaid.value +
+        totalPersonalPeoplePaid.value +
+        totalOtherPeoplePaid.value;
+
+    highestPercentYouReceive.value = (highest['value'] / totalValue) * 100;
+    secondHighestPercentYouReceive.value =
+        (secondHighest['value'] / totalValue) * 100;
+    lastPercentYouReceive.value = (last['value'] / totalValue) * 100;
+
+    //for type category
+    highestCategoryYouReceive.value = highest['category'];
+    secondCategoryYouReceive.value = secondHighest['category'];
+    lastCategoryYouReceive.value = last['category'];
+
+    // get RM value for each of them
+    highestRmYouReceive.value = highest['value'];
+    secondHighestRmYouReceive.value = secondHighest['value'];
+    lastRmYouReceive.value = last['value'];
+
+    print('highest Percent: ${highestPercentYouReceive.value}');
+    print('second highest Percent: ${secondHighestPercentYouReceive.value}');
+    print('Last Percent: ${lastPercentYouReceive.value}');
+
+    print('Highest: ${highest['category']} with value ${highest['value']}');
+    print(
+        'Second Highest: ${secondHighest['category']} with value ${secondHighest['value']}');
+    print('Last: ${last['category']} with value ${last['value']}');
+
+    // You can use these values to update your UI or perform other logic
+  }
+
+  void determineHighestSecondAndLastYouPaid() {
+    // Create a list of tuples containing the category and the corresponding value
+    List<Map<String, dynamic>> values = [
+      {'category': 'Food', 'value': totalFoodYouPaid.value},
+      {'category': 'Personal', 'value': totalPersonalYouPaid.value},
+      {'category': 'Other', 'value': totalOtherYouPaid.value},
     ];
 // The comparison function determines the order of elements in the list. It takes two elements (a and b) and returns:
 // A negative number if a should come before b.
@@ -235,19 +273,30 @@ class ExpensesController extends GetxController {
     var last = values[2];
 
     //convert to percentage
-    double totalValue =
-        totalFood.value + totalPersonal.value + totalOther.value;
+    double totalValue = totalFoodYouPaid.value +
+        totalPersonalYouPaid.value +
+        totalOtherYouPaid.value;
 
-    highestPercent.value = (highest['value'] / totalValue) * 100;
-    secondHighestPercent.value = (secondHighest['value'] / totalValue) * 100;
-    lastPercent.value = (last['value'] / totalValue) * 100;
+    highestPercentYouPaid.value = (highest['value'] / totalValue) * 100;
+    secondHighestPercentYouPaid.value =
+        (secondHighest['value'] / totalValue) * 100;
+    lastPercentYouPaid.value = (last['value'] / totalValue) * 100;
 
-    //for text category
-    highestCategory.value = highest['category'];
-    secondCategory.value = secondHighest['category'];
-    lastPercentCategory.value = last['category'];
+    //for type category
+    highestCategoryYouPaid.value = highest['category'];
+    secondCategoryYouPaid.value = secondHighest['category'];
+    lastCategoryYouPaid.value = last['category'];
 
-    print('highestPercent $highestPercent');
+    // get RM value for each of them
+    highestRmYouPaid.value = highest['value'];
+    secondHighestRmYouPaid.value = secondHighest['value'];
+    lastRmYouPaid.value = last['value'];
+
+    print('highest Percent you paid ${highestPercentYouPaid.value}');
+    print(
+        'Second highest Percent you paid ${secondHighestPercentYouPaid.value}');
+    print('Lowest Percent you paid ${lastPercentYouPaid.value}');
+
     print('Highest: ${highest['category']} with value ${highest['value']}');
     print(
         'Second Highest: ${secondHighest['category']} with value ${secondHighest['value']}');
@@ -256,15 +305,15 @@ class ExpensesController extends GetxController {
     // You can use these values to update your UI or perform other logic
   }
 
-  // view food payment made
-  Future<double> loadPaymentMadeForFood() async {
+  // view food expenses You Owe
+  Future<double> loadPaymentYouPaidForFood() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
         uid.value = user
             .uid; // Query the 'DebtTickets' subcollection for the current user
-        QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
+        QuerySnapshot<Map<String, dynamic>> expensesSnapshot =
             await FirebaseFirestore.instance
                 .collection('Users')
                 .doc(uid.value)
@@ -276,8 +325,8 @@ class ExpensesController extends GetxController {
         double totalAmount = 0.0;
 
         // Check if there are any matching documents
-        if (debtTicketsSnapshot.docs.isNotEmpty) {
-          for (var docSnapshot in debtTicketsSnapshot.docs) {
+        if (expensesSnapshot.docs.isNotEmpty) {
+          for (var docSnapshot in expensesSnapshot.docs) {
             Map<String, dynamic> data = docSnapshot.data();
 
             // Access specific fields
@@ -302,12 +351,12 @@ class ExpensesController extends GetxController {
           print('No documents found matching the query for you');
         }
 
-        totalAmountOwnYouFood.value = totalAmount;
+        totalAmountYouOwnFood.value = totalAmount;
 
         // Print the total amount
         print(
-            'Total Amount org hutang ko for food: ${totalAmountOwnYouFood.value}');
-        return totalAmountOwnYouFood.value;
+            'Total Amount ko bayar hutang for food: ${totalAmountYouOwnFood.value}');
+        return totalAmountYouOwnFood.value;
       } else {
         print('User is not authenticated');
         return 0.0;
@@ -318,15 +367,15 @@ class ExpensesController extends GetxController {
     }
   }
 
-  //payment y make for personal category
-  Future<double> loadPaymentMadeForPersonal() async {
+  //expenses personal category You Owe
+  Future<double> loadPaymentYouPaidForPersonal() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
         uid.value = user
             .uid; // Query the 'DebtTickets' subcollection for the current user
-        QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
+        QuerySnapshot<Map<String, dynamic>> expensesSnapshot =
             await FirebaseFirestore.instance
                 .collection('Users')
                 .doc(uid.value)
@@ -338,8 +387,8 @@ class ExpensesController extends GetxController {
         double totalAmount = 0.0;
 
         // Check if there are any matching documents
-        if (debtTicketsSnapshot.docs.isNotEmpty) {
-          for (var docSnapshot in debtTicketsSnapshot.docs) {
+        if (expensesSnapshot.docs.isNotEmpty) {
+          for (var docSnapshot in expensesSnapshot.docs) {
             Map<String, dynamic> data = docSnapshot.data();
 
             // Access specific fields
@@ -364,12 +413,12 @@ class ExpensesController extends GetxController {
           print('No documents found matching the query for you');
         }
 
-        totalAmountOwnYouPersonal.value = totalAmount;
+        totalAmountYouOwnPersonal.value = totalAmount;
 
         // Print the total amount
         print(
-            'Total Amount org hutang ko for personal: ${totalAmountOwnYouPersonal.value}');
-        return totalAmountOwnYouPersonal.value;
+            'Total Amount ko byr hutang org for personal: ${totalAmountYouOwnPersonal.value}');
+        return totalAmountYouOwnPersonal.value;
       } else {
         print('User is not authenticated');
         return 0.0;
@@ -380,15 +429,15 @@ class ExpensesController extends GetxController {
     }
   }
 
-  //payment y make for other category
-  Future<double> loadPaymentMadeForOther() async {
+  //expenses for other category You Owe
+  Future<double> loadPaymentYouPaidForOther() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
         uid.value = user
             .uid; // Query the 'DebtTickets' subcollection for the current user
-        QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
+        QuerySnapshot<Map<String, dynamic>> expensesSnapshot =
             await FirebaseFirestore.instance
                 .collection('Users')
                 .doc(uid.value)
@@ -400,8 +449,8 @@ class ExpensesController extends GetxController {
         double totalAmount = 0.0;
 
         // Check if there are any matching documents
-        if (debtTicketsSnapshot.docs.isNotEmpty) {
-          for (var docSnapshot in debtTicketsSnapshot.docs) {
+        if (expensesSnapshot.docs.isNotEmpty) {
+          for (var docSnapshot in expensesSnapshot.docs) {
             Map<String, dynamic> data = docSnapshot.data();
 
             // Access specific fields
@@ -426,12 +475,247 @@ class ExpensesController extends GetxController {
           print('No documents found matching the query for you');
         }
 
-        totalAmountOwnYouOther.value = totalAmount;
+        totalAmountYouOwnOther.value = totalAmount;
 
         // Print the total amount
         print(
-            'Total Amount org hutang ko for other: ${totalAmountOwnYouOther.value}');
-        return totalAmountOwnYouOther.value;
+            'Total Amount ko hutang org for other: ${totalAmountYouOwnOther.value}');
+        return totalAmountYouOwnOther.value;
+      } else {
+        print('User is not authenticated');
+        return 0.0;
+      }
+    } catch (e) {
+      print('Error completing: $e');
+      return 0.0;
+    }
+  }
+
+// load payment people paid for you for food category
+
+  Future<double> loadPaymentPeoplePaidForFood() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Get current user ID
+        String currentUserId = user.uid;
+
+        // Initialize totalAmount
+        double totalAmount = 0.0;
+
+        // Retrieve all user documents from the 'Users' collection except the current user
+        QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+            await _firestore.collection('Users').get();
+
+        for (var userDoc in usersSnapshot.docs) {
+          if (userDoc.id == currentUserId) {
+            // Skip the current user
+            continue;
+          }
+
+          String uid = userDoc.id;
+          QuerySnapshot<Map<String, dynamic>> paymentCategorySnapshot =
+              await _firestore
+                  .collection('Users')
+                  .doc(uid)
+                  .collection('Payment')
+                  .doc(uid)
+                  .collection('Food')
+                  .get();
+
+          if (paymentCategorySnapshot.docs.isNotEmpty) {
+            for (var docSnapshot in paymentCategorySnapshot.docs) {
+              Map<String, dynamic> data = docSnapshot.data();
+
+              // Access specific fields
+              String category = data['category'] ?? 'No category';
+              var amount =
+                  data['amount'] ?? 0; // Make this variable type dynamic
+
+              // Convert amount to double if it's a String
+              if (amount is String) {
+                amount = double.tryParse(amount) ?? 0.0;
+              }
+
+              // Sum the amounts
+              if (amount is num) {
+                totalAmount += amount.toDouble();
+              }
+
+              print('Document ID: ${docSnapshot.id}');
+              print('category: $category');
+              print('amount: $amount');
+            }
+          } else {
+            print('No documents found matching the query for user: $uid');
+          }
+        }
+
+        // Update the observable with the total amount
+        totalAmountPeoplePaidFood.value = totalAmount;
+
+        // Print the total amount
+        print(
+            'Total Amount ko bayar hutang for food: ${totalAmountPeoplePaidFood.value}');
+        return totalAmountPeoplePaidFood.value;
+      } else {
+        print('User is not authenticated');
+        return 0.0;
+      }
+    } catch (e) {
+      print('Error completing: $e');
+      return 0.0;
+    }
+  }
+
+  // load payment people paid for you for personal category
+
+  Future<double> loadPaymentPeoplePayForPersonal() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Get current user ID
+        String currentUserId = user.uid;
+
+        // Initialize totalAmount outside the loop
+        double totalAmount = 0.0;
+
+        // Retrieve all user documents from the 'Users' collection
+        QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+            await _firestore.collection('Users').get();
+
+        for (var userDoc in usersSnapshot.docs) {
+          if (userDoc.id == currentUserId) {
+            // Skip the current user
+            continue;
+          }
+
+          String uid = userDoc.id;
+          QuerySnapshot<Map<String, dynamic>> paymentCategorySnapshot =
+              await _firestore
+                  .collection('Users')
+                  .doc(uid)
+                  .collection('Payment')
+                  .doc(uid)
+                  .collection('Personal')
+                  .get();
+
+          if (paymentCategorySnapshot.docs.isNotEmpty) {
+            for (var docSnapshot in paymentCategorySnapshot.docs) {
+              Map<String, dynamic> data = docSnapshot.data();
+
+              // Access specific fields
+              String category = data['category'] ?? 'No category';
+              var amount =
+                  data['amount'] ?? 0; // Make this variable type dynamic
+
+              // Convert amount to double if it's a String
+              if (amount is String) {
+                amount = double.tryParse(amount) ?? 0.0;
+              }
+
+              // Sum the amounts
+              if (amount is num) {
+                totalAmount += amount.toDouble();
+              }
+
+              print('Document ID: ${docSnapshot.id}');
+              print('category: $category');
+              print('amount: $amount');
+            }
+          } else {
+            print('No documents found matching the query for user: $uid');
+          }
+        }
+
+        // Update the observable with the total amount
+        totalAmountPeoplePaidPersonal.value = totalAmount;
+
+        // Print the total amount
+        print(
+            'Total Amount people paid for personal: ${totalAmountPeoplePaidPersonal.value}');
+        return totalAmountPeoplePaidPersonal.value;
+      } else {
+        print('User is not authenticated');
+        return 0.0;
+      }
+    } catch (e) {
+      print('Error completing: $e');
+      return 0.0;
+    }
+  }
+
+  Future<double> loadPaymentPeoplePayForOther() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Get current user ID
+        String currentUserId = user.uid;
+
+        // Initialize totalAmount outside the loop
+        double totalAmount = 0.0;
+
+        // Retrieve all user documents from the 'Users' collection
+        QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+            await _firestore.collection('Users').get();
+
+        for (var userDoc in usersSnapshot.docs) {
+          String uid = userDoc.id;
+
+          // Skip the current user
+          if (uid == currentUserId) {
+            continue;
+          }
+
+          // Query payments under 'Other' category for each user
+          QuerySnapshot<Map<String, dynamic>> paymentCategorySnapshot =
+              await _firestore
+                  .collection('Users')
+                  .doc(uid)
+                  .collection('Payment')
+                  .doc(uid)
+                  .collection('Other')
+                  .get();
+
+          if (paymentCategorySnapshot.docs.isNotEmpty) {
+            // Process each payment document
+            for (var docSnapshot in paymentCategorySnapshot.docs) {
+              Map<String, dynamic> data = docSnapshot.data();
+
+              // Access specific fields
+              String category = data['category'] ?? 'No category';
+              var amount =
+                  data['amount'] ?? 0; // Make this variable type dynamic
+
+              // Convert amount to double if it's a String
+              if (amount is String) {
+                amount = double.tryParse(amount) ?? 0.0;
+              }
+
+              // Sum the amounts
+              if (amount is num) {
+                totalAmount += amount.toDouble();
+              }
+
+              print('Document ID: ${docSnapshot.id}');
+              print('category: $category');
+              print('amount: $amount');
+            }
+          } else {
+            print('No documents found matching the query for user: $uid');
+          }
+        }
+
+        // Update the observable with the total amount
+        totalAmountPeoplePaidOther.value = totalAmount;
+
+        // Print the total amount
+        print(
+            'Total Amount people paid for other: ${totalAmountPeoplePaidOther.value}');
+        return totalAmountPeoplePaidOther.value;
       } else {
         print('User is not authenticated');
         return 0.0;

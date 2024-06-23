@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:math';
 
 import 'package:bucks_buddy/features/payment/models/payment_model.dart';
@@ -21,20 +22,22 @@ class PaymentController extends GetxController {
       Rx<DocumentSnapshot<Map<String, dynamic>>?>(null);
   Rx<DocumentSnapshot<Map<String, dynamic>>?> debtorBankDetails =
       Rx<DocumentSnapshot<Map<String, dynamic>>?>(null);
-  Rx<DocumentSnapshot<Map<String, dynamic>>?> creditorBankDetails =
-      Rx<DocumentSnapshot<Map<String, dynamic>>?>(null);
+  // var updatedDebtTicket = Rxn<DocumentSnapshot<Map<String, dynamic>>>();
+
   RxList<PaymentModel> paymentModel = <PaymentModel>[].obs;
 
   String? debtoruid;
-  var amount = ''.obs;
+  var amount = 0.0.obs;
   var creditorName = ''.obs;
   var creditorAccount = ''.obs;
+  var debtorAccount = ''.obs;
   var debtorName = ''.obs;
   var bankAccount = ''.obs;
   var debtTicketId = ''.obs;
   var category = ''.obs;
   var paymentId = ''.obs;
   var date = ''.obs;
+  var phoneNumber = ''.obs;
 
   //payment amount screen
   Rx<String> responseMessage = ''.obs;
@@ -55,42 +58,113 @@ class PaymentController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchDebtTicket();
-    fetchCreditorBanksDetails();
-    generatePaymentId();
   }
 
-  void fetchDebtTicket() async {
+  //fetch specific debt ticket = debt_buddy_pay
+  Future<void> fetchDebtTickeToPay(String ticketId) async {
+    debtTicketId.value = ticketId;
     try {
-      // Step 1: Get the current user's UID
+      // Ensure ticketId is not empty
+      if (ticketId.isEmpty) {
+        throw Exception('The ticketId provided is empty.');
+      }
+      // Retrieve all user documents from the 'Users' collection
+      QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+          await FirebaseFirestore.instance.collection('Users').get();
+
+      // Iterate through each user document
+      for (var userDoc in usersSnapshot.docs) {
+        String userId = userDoc.id;
+        // Query the 'DebtTickets' subcollection for the current user by ticketId field
+        QuerySnapshot<Map<String, dynamic>> ticketQuerySnapshot =
+            await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(userId)
+                .collection('DebtTickets')
+                .where('debtTicketId', isEqualTo: ticketId)
+                .get();
+
+        // Check if any documents are found
+        if (ticketQuerySnapshot.docs.isNotEmpty) {
+          var ticketDocSnapshot = ticketQuerySnapshot.docs.first;
+          debtTicket.value = ticketDocSnapshot;
+          break;
+        }
+      }
+
+      return;
+    } catch (e) {
+      throw Exception('Error fetching debt ticket by ID: $e');
+    }
+  }
+
+//update status of ticket
+  void updateDebtStatus() async {
+    var paidTicket = debtTicketId.value;
+    Map<String, dynamic> updatedData = {'status': 'Paid'};
+    try {
+      await updatedDebtTicket(updatedData, paidTicket);
+    } catch (e) {}
+  }
+
+  Future<void> updatedDebtTicket(
+      Map<String, dynamic> updatedData, String ticketId) async {
+    debtTicketId.value = ticketId;
+    try {
+      // Ensure ticketId is not empty
+      if (ticketId.isEmpty) {
+        throw Exception('The ticketId provided is empty.');
+      }
+
+      // Retrieve all user documents from the 'Users' collection
+      QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+          await _firestore.collection('Users').get();
+
+      // Iterate through each user document
+      for (var userDoc in usersSnapshot.docs) {
+        String userId = userDoc.id;
+
+        // Query the 'DebtTickets' subcollection for the current user by ticketId field
+        QuerySnapshot<Map<String, dynamic>> ticketQuerySnapshot =
+            await _firestore
+                .collection('Users')
+                .doc(userId)
+                .collection('DebtTickets')
+                .where('debtTicketId', isEqualTo: ticketId)
+                .get();
+
+        // Check if any documents are found
+        if (ticketQuerySnapshot.docs.isNotEmpty) {
+          var ticketDocSnapshot = ticketQuerySnapshot.docs.first;
+          await ticketDocSnapshot.reference.update(updatedData);
+          Get.snackbar('Success', 'Debt Ticket Status updated');
+          break;
+        }
+      }
+    } catch (e) {
+      throw Exception('Error updating debt ticket: $e');
+    }
+  }
+
+//org yg nak pay = payment_amount_screeen
+  void fetchDebtorDetails() async {
+    try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        String uid = user.uid;
+        var uid = user.uid;
 
-        // Step 2: Query Firestore using the UID and specific document ID
-        DocumentSnapshot<Map<String, dynamic>> snapshot = await _firestore
-            .collection('Users')
-            .doc(uid)
-            .collection('DebtTickets')
-            .doc(
-                'Pv3ZWn2h9Vt6a45m2Hr9') // Replace with your specific document ID
-            .get();
+        DocumentSnapshot userSnapshot =
+            await _firestore.collection('Users').doc(uid).get();
 
-        // Step 3: Assign the fetched document to the Rx variable
-        if (snapshot.exists) {
-          debtTicket.value = snapshot;
-          fetchDebtorDetails(snapshot['debtor']);
-          paymentAmountInput(snapshot['amount']);
-          actualAmount(snapshot['amount']);
-          creditorAccount.value = snapshot['bankAccountNumber'];
-          creditorName.value = snapshot['creditor'];
-          amount.value = snapshot['amount'];
-          debtorName.value = snapshot['debtor'];
-          bankAccount.value = snapshot['bankAccount'];
-          debtTicketId.value = snapshot.id;
+        // Step 5: Iterate through each document in the user snapshot
+        if (userSnapshot.exists) {
+          // debtoruid = userSnapshot.id;
+          phoneNumber.value = userSnapshot['PhoneNumber'];
+          print("phoneNumber: ${phoneNumber.value}");
+          print(uid);
+          fetchDebtorBanksDetails(uid);
         } else {
-          debtTicket.value = null;
-          print('Document does not exist');
+          print('Debtor user does not exist');
         }
       }
     } catch (e) {
@@ -98,38 +172,12 @@ class PaymentController extends GetxController {
     }
   }
 
-  void fetchDebtorDetails(String debtorUsername) async {
+//
+  Future<void> fetchDebtorBanksDetails(debtoruid) async {
     try {
-      // Step 4: Query Firestore to get all users
-      QuerySnapshot userSnapshot = await _firestore
-          .collection('Users')
-          .where('Username', isEqualTo: debtorUsername)
-          .limit(1)
-          .get();
-
-      // Step 5: Iterate through each document in the user snapshot
-      if (userSnapshot.docs.isNotEmpty) {
-        debtoruid = userSnapshot.docs.first.id;
-        // print(uid);
-        fetchDebtorBanksDetails(debtoruid!);
-
-        user.value =
-            userSnapshot.docs.first as DocumentSnapshot<Map<String, dynamic>>?;
-      } else {
-        user.value = null;
-        print('Debtor user does not exist');
-      }
-    } catch (e) {
-      print('Error retrieving data: $e');
-    }
-  }
-
-  Future<void> fetchDebtorBanksDetails(String debtorUid) async {
-    try {
-      // Step 4: Query Firestore to get all banks for the debtor
       QuerySnapshot<Map<String, dynamic>> debtorBankSnapshot = await _firestore
           .collection('Users')
-          .doc(debtorUid)
+          .doc(debtoruid)
           .collection('Banks')
           .get();
 
@@ -138,31 +186,6 @@ class PaymentController extends GetxController {
         debtorBankDetails.value = debtorBankSnapshot.docs.first
             as DocumentSnapshot<Map<String, dynamic>>?;
         print(debtorBankDetails.value);
-      }
-    } catch (e) {
-      print('Error retrieving data: $e');
-    }
-  }
-
-  Future<void> fetchCreditorBanksDetails() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-
-      if (user != null) {
-        String uid = user.uid;
-        QuerySnapshot<Map<String, dynamic>> creditorBankSnapshot =
-            await _firestore
-                .collection('Users')
-                .doc(uid)
-                .collection('Banks')
-                .get();
-
-        // Step 5: Check if there are any documents
-        if (creditorBankSnapshot.docs.isNotEmpty) {
-          creditorBankDetails.value = creditorBankSnapshot.docs.first
-              as DocumentSnapshot<Map<String, dynamic>>?;
-          print(creditorBankDetails.value);
-        }
       }
     } catch (e) {
       print('Error retrieving data: $e');
@@ -178,7 +201,7 @@ class PaymentController extends GetxController {
 
     double? errorValue = double.tryParse(value);
     double? paymentInput = paymentAmountInput(value);
-    double? actual = actualAmount(amount.value);
+    double? actual = actualAmount();
 
     if (errorValue == null || paymentInput == null || actual == null) {
       paymentAmountError.value = 'Invalid amount or payment value';
@@ -195,10 +218,22 @@ class PaymentController extends GetxController {
     // Clear the error if everything is correct
   }
 
-  actualAmount(String value) {
-    amount.value = value;
-    print(amount.value);
-    return double.tryParse(amount.value);
+  actualAmount() {
+    try {
+      var bayaran = debtTicket.value;
+      if (bayaran != null) {
+        // Parse the amount value from String to double
+        String amountString = bayaran['amount'];
+        amount.value = double.parse(amountString);
+        print('Amount ${amount.value}');
+      } else {
+        print('No debt ticket found.');
+      }
+    } catch (e) {
+      print('Error parsing amount: ${e.toString()}');
+    }
+
+    return amount.value;
   }
 
   paymentAmountInput(String value) {
@@ -240,11 +275,24 @@ class PaymentController extends GetxController {
 // start credit transfer api
   void creditTransferApi() {
     try {
+      var ticket = debtTicket.value;
+      var pembayarBankAccount = debtorBankDetails.value;
+      if (ticket != null) {
+        debtorName.value = ticket['debtor'];
+        debtorAccount.value = pembayarBankAccount?['AccountNumber'];
+        creditorAccount.value = ticket['bankAccountNumber'];
+        creditorName.value = ticket['creditor'];
+        bankAccount.value = pembayarBankAccount?['BankName'];
+        print('Debtor: ${debtorName.value}');
+        print('Debtor Bank Account: ${debtorAccount.value}');
+      }
+
       CreditTransfer creditTransfer = CreditTransfer(
+          debtorAccount: debtorAccount.string,
+          creditorName: debtorName.string,
           creditorAccount: creditorAccount.string,
-          creditorName: creditorName.string,
           amount: amount.string,
-          debtorName: debtorName.string,
+          debtorName: creditorName.string,
           bankAccount: bankAccount.string);
       creditTransfer.sendPostRequest();
     } catch (e) {
@@ -254,9 +302,10 @@ class PaymentController extends GetxController {
 
 //create payment doc
   Future<void> addPaymentDetails() async {
+    generatePaymentId();
     var createdDateTime =
         DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(DateTime.now());
-    double parsedAmount = double.tryParse(amount.value) ?? 0.0;
+    double parsedAmount = amount.value;
     var paymentInstances = PaymentModel(
       amount: parsedAmount,
       creditorUserId: creditorName.value,
@@ -265,7 +314,7 @@ class PaymentController extends GetxController {
       debtorUserId: debtorName.value,
       paymentId: paymentId.value,
       references: recipientReferenceInput.text,
-      optionalrReferences: recipientOptionalInput.text,
+      optionalReferences: recipientOptionalInput.text,
       category: category.value,
     );
 
@@ -319,11 +368,12 @@ class PaymentController extends GetxController {
   }
 
   //generatedPaymentId
-  void generatePaymentId() {
+  String generatePaymentId() {
     Random random = Random();
     var randomId = (random.nextInt(90000) + 10000).toString();
     paymentId.value = randomId.toString();
     print(paymentId.value);
+    return paymentId.value;
   }
 
   void nextPagePaymentAmountScreen() {

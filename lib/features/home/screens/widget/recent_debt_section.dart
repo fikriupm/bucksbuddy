@@ -18,12 +18,12 @@ class RecentDebtSection extends StatelessWidget {
       future: _fetchLatestDebtTicket(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: const CircularProgressIndicator());
         } else if (snapshot.hasError) {
           print('Error fetching latest debt ticket: ${snapshot.error}');
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data == null) {
-          return Center(child: Text('No debt ticket found.'));
+          return const Center(child: Text('No debt ticket found.'));
         } else {
           DebtTicket ticket = snapshot.data!;
           return Container(
@@ -86,83 +86,83 @@ class RecentDebtSection extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'ID: ${ticket.debtTicketId}',
+                                style: const TextStyle(
+                                  color: Color.fromARGB(255, 99, 99, 99),
+                                  fontSize: 12,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DebtTicketTCreated(
+                                          debtTicketId: ticket.debtTicketId),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Details >'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor:
+                                      const Color.fromARGB(255, 0, 0, 0),
+                                ),
+                              ),
+                            ],
+                          ),
                           Text(
-                            'ID: ${ticket.debtTicketId}',
-                            style: TextStyle(
-                              color: const Color.fromARGB(255, 99, 99, 99),
-                              fontSize: 12,
+                            'To : ${ticket.debtor}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
                             ),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DebtTicketTCreated(
-                                      debtTicketId: ticket.debtTicketId),
-                                ),
-                              );
-                            },
-                            child: Text('Details >'),
-                            style: TextButton.styleFrom(
-                              foregroundColor:
-                                  Color.fromARGB(255, 0, 0, 0),
+                          Text(
+                            'RM${ticket.amount}',
+                            style: const TextStyle(
+                              fontSize: 18,
                             ),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.calendar_month, size: 20),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      DateFormat.yMd().format(DateTime.parse(
+                                          ticket.dateTime)), // Format the date
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.access_time, size: 20),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      DateFormat.Hms().format(DateTime.parse(
+                                          ticket.dateTime)), // Format the time
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      Text(
-                        'To : ${ticket.debtor}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                      Text(
-                        'RM${ticket.amount}',
-                        style: TextStyle(
-                          fontSize: 18,
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Icon(Icons.calendar_month, size: 20),
-                                SizedBox(width: 5),
-                                Text(
-                                  DateFormat.yMd().format(DateTime.parse(
-                                      ticket.dateTime)), // Format the date
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(width: 20),
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Icon(Icons.access_time, size: 20),
-                                SizedBox(width: 5),
-                                Text(
-                                  DateFormat.Hms().format(DateTime.parse(
-                                      ticket.dateTime)), // Format the time
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
                     ),
                   ),
                 ),

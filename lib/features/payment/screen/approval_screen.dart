@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:bucks_buddy/features/payment/controllers/payment_controller.dart';
 import 'package:bucks_buddy/features/payment/screen/payment_success_screen.dart';
 import 'package:bucks_buddy/utils/constants/sizes.dart';
@@ -73,7 +71,7 @@ class ApprovalScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Tranfser \nType'),
+                            const Text('Transfer \nType'),
                             Text(paymentController.selectedMethod.value),
                           ],
                         ),
@@ -125,10 +123,11 @@ class ApprovalScreen extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 try {
-                  //kt sini bru updated to firebase
-                  paymentController.creditTransferApi();
-                  Get.to(PaymentSuccessScreen());
-                  //Get.snackbar('title', amount.toString());
+                  // Update state safely after current frame
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    paymentController.creditTransferApi();
+                    Get.to(PaymentSuccessScreen());
+                  });
                 } catch (e) {
                   Get.snackbar('Error', e.toString());
                 }
