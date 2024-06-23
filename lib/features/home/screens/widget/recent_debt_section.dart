@@ -53,7 +53,7 @@ class RecentDebtSection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          "Recent Debt Tickets",
+                          "Debt Tickets",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: TSizes.fontSizeSm,

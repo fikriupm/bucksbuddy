@@ -34,34 +34,34 @@ class QuickActionSection extends StatelessWidget {
                   fontSize: TSizes.fontSizeLg * 1.2,
                   fontWeight: FontWeight.bold),
             ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  // Fetch username from Firestore
-                  String debtorUsername =
-                      await debtTicketController.fetchCurrentUsername();
+            // TextButton(
+            //   onPressed: () async {
+            //     try {
+            //       // Fetch username from Firestore
+            //       String debtorUsername =
+            //           await debtTicketController.fetchCurrentUsername();
 
-                  // Navigate to the new screen with the fetched username
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ViewAllDebtToPaidScreen(
-                          debtorUsername: debtorUsername),
-                    ),
-                  );
-                } catch (e) {
-                  // Handle the error appropriately here, e.g., show a snackbar or dialog
-                  print("Error fetching username: $e");
-                }
-              },
-              child: const Text(
-                "View all",
-                style: TextStyle(
-                  fontSize: TSizes.fontSizeSm,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            //       // Navigate to the new screen with the fetched username
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (context) => ViewAllDebtToPaidScreen(
+            //               debtorUsername: debtorUsername),
+            //         ),
+            //       );
+            //     } catch (e) {
+            //       // Handle the error appropriately here, e.g., show a snackbar or dialog
+            //       print("Error fetching username: $e");
+            //     }
+            //   },
+            //   child: const Text(
+            //     "View all",
+            //     style: TextStyle(
+            //       fontSize: TSizes.fontSizeSm,
+            //       fontWeight: FontWeight.bold,
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ],
