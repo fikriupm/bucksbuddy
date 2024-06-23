@@ -1,7 +1,6 @@
 // debt_ticket_controller.dart
 
 import 'package:bucks_buddy/features/home/CreateDebt/model/debt_ticket_model.dart';
-import 'package:bucks_buddy/features/home/homepage.dart';
 import 'package:bucks_buddy/features/personalization/controllers/user_controller.dart';
 import 'package:bucks_buddy/features/personalization/controllers/bank_account_controller.dart';
 import 'package:bucks_buddy/navigation_menu.dart';
@@ -92,29 +91,6 @@ class DebtTicketController extends GetxController {
     return 'BBDT${DateTime.now().millisecondsSinceEpoch}';
   }
 
-  Future<List<DebtTicket>> fetchDebtTickets() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(user.uid)
-            .collection('DebtTickets')
-            .orderBy('dateTime', descending: true) // Order by dateTime field
-            .get();
-
-        return querySnapshot.docs
-            .map((doc) =>
-                DebtTicket.fromJson(doc.data() as Map<String, dynamic>))
-            .toList();
-      } else {
-        throw Exception('User is not authenticated.');
-      }
-    } catch (e) {
-      throw Exception('Error fetching all debt tickets: $e');
-    }
-  }
-
   Future<String> fetchCurrentUsername() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -136,45 +112,192 @@ class DebtTicketController extends GetxController {
     }
   }
 
+  Future<List<DebtTicket>> fetchDebtTickets() async {
+    List<DebtTicket> debtTickets = [];
+
+    try {
+      // Retrieve the authenticated user
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User is not authenticated.');
+      }
+
+      // Query the 'DebtTickets' subcollection for the authenticated user
+      QuerySnapshot<
+          Map<String,
+              dynamic>> debtTicketsSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user
+              .uid) // Directly access the document of the authenticated user
+          .collection('DebtTickets')
+          .where('status', isEqualTo: 'not_paid')
+          .get();
+
+      // Check if there are any matching documents
+      if (debtTicketsSnapshot.docs.isNotEmpty) {
+        for (var docSnapshot in debtTicketsSnapshot.docs) {
+          Map<String, dynamic> data = docSnapshot.data();
+
+          // Map data to DebtTicket model
+          DebtTicket ticket = DebtTicket.fromJson(data);
+          debtTickets.add(ticket);
+        }
+      }
+
+      // Sort the debt tickets by dateTime in ascending order
+      debtTickets.sort((a, b) =>
+          DateTime.parse(a.dateTime).compareTo(DateTime.parse(b.dateTime)));
+    } catch (e) {
+      print('Error fetching debt tickets: $e');
+    }
+
+    return debtTickets;
+  }
+
   Future<List<DebtTicket>> fetchDebtTicketsOwn(String debtorUsername) async {
     String debtorYouOwn = debtorUsername;
     List<DebtTicket> debtTickets = [];
 
     try {
-      // Retrieve all user documents from the 'Users' collection
       QuerySnapshot<Map<String, dynamic>> usersSnapshot =
           await FirebaseFirestore.instance.collection('Users').get();
 
-      // Iterate through each user document
       for (var userDoc in usersSnapshot.docs) {
         String userId = userDoc.id;
 
-        // Query the 'DebtTickets' subcollection for the current user
         QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
             await FirebaseFirestore.instance
                 .collection('Users')
                 .doc(userId)
                 .collection('DebtTickets')
                 .where('debtor', isEqualTo: debtorYouOwn)
+                .where('status', isEqualTo: 'not_paid')
                 .get();
 
-        // Check if there are any matching documents
         if (debtTicketsSnapshot.docs.isNotEmpty) {
           for (var docSnapshot in debtTicketsSnapshot.docs) {
             Map<String, dynamic> data = docSnapshot.data();
-
-            // Map data to DebtTicket model
             DebtTicket ticket = DebtTicket.fromJson(data);
             debtTickets.add(ticket);
-            ;
           }
-        } else {}
+        }
       }
 
-      return debtTickets;
+      debtTickets.sort((a, b) =>
+          DateTime.parse(a.dateTime).compareTo(DateTime.parse(b.dateTime)));
     } catch (e) {
-      throw Exception('Error fetching all debt tickets: $e');
+      print('Error fetching debt tickets: $e');
     }
+
+    return debtTickets;
+  }
+
+  Future<List<DebtTicket>> viewDebtTicketPaid() async {
+    List<DebtTicket> debtTickets = [];
+
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User is not authenticated.');
+      }
+      
+      QuerySnapshot<
+          Map<String,
+              dynamic>> creditorDebtTicketsSnapshot = await FirebaseFirestore
+          .instance
+          .collection('Users')
+          .doc(user
+              .uid) // Directly access the document of the authenticated user
+          .collection('DebtTickets')
+          .where('status', isEqualTo: 'Paid')
+          .get();
+
+      if (creditorDebtTicketsSnapshot.docs.isNotEmpty) {
+        for (var docSnapshot in creditorDebtTicketsSnapshot.docs) {
+          Map<String, dynamic> data = docSnapshot.data();
+          DebtTicket ticket = DebtTicket.fromJson(data);
+          debtTickets.add(ticket);
+        }
+      }
+
+      // Sort debt tickets by dateTime
+      debtTickets.sort((a, b) =>
+          DateTime.parse(b.dateTime).compareTo(DateTime.parse(a.dateTime)));
+    } catch (e, stackTrace) {
+      print('Error fetching debt tickets: $e');
+      print(stackTrace); // Print stack trace for more detailed error logging
+    }
+
+    if (debtTickets.isEmpty) {
+      print('No paid debt tickets found for');
+    }
+
+    return debtTickets;
+  }
+
+    Future<List<DebtTicket>> viewDebtTicketUOwePaid(String debtorUsername) async {
+
+    
+    List<DebtTicket> debtTickets = [];
+
+    try {
+      QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+          await FirebaseFirestore.instance.collection('Users').get();
+
+      for (var userDoc in usersSnapshot.docs) {
+        String userId = userDoc.id;
+
+        QuerySnapshot<Map<String, dynamic>> debtTicketsSnapshot =
+            await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(userId)
+                .collection('DebtTickets')
+                .where('debtor', isEqualTo: debtorUsername)
+                .where('status', isEqualTo: 'Paid')
+                .get();
+
+        if (debtTicketsSnapshot.docs.isNotEmpty) {
+          for (var docSnapshot in debtTicketsSnapshot.docs) {
+            Map<String, dynamic> data = docSnapshot.data();
+            DebtTicket ticket = DebtTicket.fromJson(data);
+            debtTickets.add(ticket);
+          }
+        }
+      }
+
+      debtTickets.sort((a, b) =>
+          DateTime.parse(b.dateTime).compareTo(DateTime.parse(a.dateTime)));
+
+      // Fetch debt tickets where you are the debtor and status is 'Paid'
+      // QuerySnapshot<Map<String, dynamic>> debtorDebtTicketsSnapshot =
+      //     await FirebaseFirestore.instance
+      //         .collection('Users')
+      //         .doc(user.uid)
+      //         .collection('DebtTickets')
+      //         .where('debtor', isEqualTo: debtorUsername)
+      //         .where('status', isEqualTo: 'Paid')
+      //         .get();
+
+      // if (debtorDebtTicketsSnapshot.docs.isNotEmpty) {
+      //   for (var docSnapshot in debtorDebtTicketsSnapshot.docs) {
+      //     Map<String, dynamic> data = docSnapshot.data();
+      //     DebtTicket ticket = DebtTicket.fromJson(data);
+      //     debtTickets.add(ticket);
+      //   }
+      // }
+
+
+      // Sort debt tickets by dateTime
+    } catch (e, stackTrace) {
+      print('Error fetching debt tickets: $e');
+      print(stackTrace); // Print stack trace for more detailed error logging
+    }
+
+    if (debtTickets.isEmpty) {
+      print('No paid debt tickets found for');
+    }
+
+    return debtTickets;
   }
 
   Future<DebtTicket?> fetchDebtTickeCreatedtById(String ticketId) async {

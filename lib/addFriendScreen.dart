@@ -48,14 +48,6 @@ class _FriendScreenState extends State<FriendScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
       body: _buildBody(),
     );
   }
@@ -88,22 +80,25 @@ class _FriendScreenState extends State<FriendScreen> {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Image.asset(
-              'assets/logos/logo-main.png',
-              height: 80,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Image.asset(
+                'assets/logos/logo-main.png',
+                height: 80,
+              ),
             ),
           ),
-        ),
-        _buildSection('Your Friends', _currentUserFriends,
-            isFriendSection: true),
-        _buildSection('Add a new friend', _nonFriends, isFriendSection: false),
-      ],
+          _buildSection('Your Friends', _currentUserFriends,
+              isFriendSection: true),
+          _buildSection('Add a new friend', _nonFriends,
+              isFriendSection: false),
+        ],
+      ),
     );
   }
 
