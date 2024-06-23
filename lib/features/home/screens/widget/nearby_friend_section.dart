@@ -11,7 +11,7 @@ class NearbyFriendsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Nearby Friends",
+          "Friends",
           style: TextStyle(
             fontSize: 24, // Adjust the font size as needed
             fontWeight: FontWeight.bold,

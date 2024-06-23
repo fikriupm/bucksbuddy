@@ -1,3 +1,4 @@
+import 'package:bucks_buddy/common/styles/spacing_styles.dart';
 import 'package:bucks_buddy/utils/device/device_utility.dart';
 import 'package:bucks_buddy/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
@@ -20,64 +21,68 @@ class Homepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // User section (fixed at the top)
-          Container(
-            color: Colors.white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: TSizes.spaceBtwItems),
-                // User section
-                Padding(
-                  padding: EdgeInsets.only(top: TDeviceUtils.getAppBarHeight()),
-                  child: UserSection(),
-                ),
-              ],
+    return Padding(
+      padding: TSpacingStyle.paddingWithAppBarHeight / 20,
+      child: Scaffold(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // User section (fixed at the top)
+            Container(
+              color: Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: TSizes.spaceBtwItems),
+                  // User section
+                  Padding(
+                    padding:
+                        EdgeInsets.only(top: TDeviceUtils.getAppBarHeight()),
+                    child: UserSection(),
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // Scrollable content
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Debt amount section
-                    DebtAmount(),
-                    const SizedBox(height: TSizes.spaceBtwItems),
+            // Scrollable content
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Debt amount section
+                      DebtAmount(),
+                      const SizedBox(height: TSizes.spaceBtwItems),
 
-                    // Debt category section
-                    DebtDetailsSection(),
-                    const SizedBox(height: TSizes.sm),
+                      // Debt category section
+                      DebtDetailsSection(),
+                      const SizedBox(height: TSizes.sm),
 
-                    // Quick action section
-                    const QuickActionSection(),
-                    const SizedBox(height: TSizes.sm),
+                      // Quick action section
+                      const QuickActionSection(),
+                      const SizedBox(height: TSizes.sm),
 
-                    // Quick action icon, text, etc. (if they are widgets)
-                    const QuickActionIcon(),
-                    const SizedBox(height: TSizes.sm),
-                    const QuickActionText(),
-                    const SizedBox(height: TSizes.defaultSpace),
+                      // Quick action icon, text, etc. (if they are widgets)
+                      const QuickActionIcon(),
+                      const SizedBox(height: TSizes.sm),
+                      const QuickActionText(),
+                      const SizedBox(height: TSizes.defaultSpace),
 
-                    // Recent Split Bills
-                    const RecentDebtSection(),
-                    const SizedBox(height: TSizes.spaceBtwItems),
+                      // Recent Split Bills
+                      const RecentDebtSection(),
+                      const SizedBox(height: TSizes.spaceBtwItems),
 
-                    // Nearby friend section
-                    NearbyFriendsSection(),
-                  ],
+                      // Nearby friend section
+                      NearbyFriendsSection(),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

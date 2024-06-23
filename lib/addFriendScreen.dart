@@ -40,7 +40,10 @@ class _FriendScreenState extends State<FriendScreen> {
 
   void _updateNonFriendsList() {
     var currentUserUid = FirebaseAuth.instance.currentUser?.uid ?? '';
-    _nonFriends = _users.where((user) => user.id != currentUserUid).toList();
+    _nonFriends = _users
+        .where((user) =>
+            user.id != currentUserUid && !_currentUserFriends.contains(user.id))
+        .toList();
     print('Non-friends: ${_nonFriends.map((u) => u.toJson()).toList()}');
     setState(() {});
   }
@@ -71,7 +74,7 @@ class _FriendScreenState extends State<FriendScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Image.asset(
                   'assets/logos/logo-main.png',
-                  height: 80,
+                  height: 40,
                 ),
               ),
             ),
@@ -81,23 +84,27 @@ class _FriendScreenState extends State<FriendScreen> {
     }
 
     return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Image.asset(
-                'assets/logos/logo-main.png',
-                height: 80,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Image.asset(
+                  'assets/logos/logo-main.png',
+                  height: 100,
+                ),
               ),
             ),
-          ),
-          _buildSection('Your Friends', _currentUserFriends,
-              isFriendSection: true),
-          _buildSection('Add a new friend', _nonFriends,
-              isFriendSection: false),
-        ],
+            _buildSection('Your Friends', _currentUserFriends,
+                isFriendSection: true),
+            SizedBox(height: 20),
+            _buildSection('Add a new friend', _nonFriends,
+                isFriendSection: false),
+          ],
+        ),
       ),
     );
   }
@@ -108,7 +115,7 @@ class _FriendScreenState extends State<FriendScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(
             title,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -125,15 +132,20 @@ class _FriendScreenState extends State<FriendScreen> {
               final user = _users.firstWhere((user) => user.id == item,
                   orElse: () => UserModel.empty());
               // Build the friend tile with a remove button
-              return _buildFriendTile(user.name, () {
-                _removeFriend(user.id, user.name,
-                    user.profilePicture); // This call remains the same
-              });
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: _buildFriendTile(user.name, () {
+                  _removeFriend(user.id, user.name, user.profilePicture);
+                }),
+              );
             } else if (!isFriendSection && item is UserModel) {
               // Build the non-friend tile with an add button
-              return _buildFriendTile(item.name, () {
-                _addFriend(item.id, item.name, item.profilePicture);
-              }, isAddButton: true);
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: _buildFriendTile(item.name, () {
+                  _addFriend(item.id, item.name, item.profilePicture);
+                }, isAddButton: true),
+              );
             } else {
               return SizedBox.shrink();
             }
