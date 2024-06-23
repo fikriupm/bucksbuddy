@@ -15,7 +15,7 @@ class PaymentAmountScreen extends StatefulWidget {
 }
 
 class _PaymentAmountScreenState extends State<PaymentAmountScreen> {
-  final PaymentController paymentController = Get.put(PaymentController());
+  final PaymentController paymentController = Get.find();
 
   @override
   void initState() {

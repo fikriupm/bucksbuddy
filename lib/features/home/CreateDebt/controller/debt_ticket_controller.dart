@@ -15,6 +15,7 @@ class DebtTicketController extends GetxController {
   final BankAccountController bankAccountController =
       BankAccountController.instance;
   var isPaid = true.obs;
+  var friendNames = <String>[].obs;
   var debtorUsername = ''.obs;
 
   @override
@@ -201,7 +202,7 @@ class DebtTicketController extends GetxController {
       if (user == null) {
         throw Exception('User is not authenticated.');
       }
-      
+
       QuerySnapshot<
           Map<String,
               dynamic>> creditorDebtTicketsSnapshot = await FirebaseFirestore
@@ -236,9 +237,7 @@ class DebtTicketController extends GetxController {
     return debtTickets;
   }
 
-    Future<List<DebtTicket>> viewDebtTicketUOwePaid(String debtorUsername) async {
-
-    
+  Future<List<DebtTicket>> viewDebtTicketUOwePaid(String debtorUsername) async {
     List<DebtTicket> debtTickets = [];
 
     try {
@@ -286,7 +285,6 @@ class DebtTicketController extends GetxController {
       //     debtTickets.add(ticket);
       //   }
       // }
-
 
       // Sort debt tickets by dateTime
     } catch (e, stackTrace) {
@@ -396,6 +394,54 @@ class DebtTicketController extends GetxController {
       }
     } catch (e) {
       print('Error fetching all debt tickets: $e');
+    }
+  }
+
+  // debtor part
+  Future<void> fetchAllFriends() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      // Retrieve all user documents from the 'Users' collection
+      List<String> fetchedFriendNames = [];
+
+      if (user != null) {
+        var uid = user.uid;
+        // Query the 'Users' document for the current user
+        DocumentSnapshot<Map<String, dynamic>> friendsSnapshot =
+            await FirebaseFirestore.instance.collection('Users').doc(uid).get();
+
+        // Check if the document exists
+        if (friendsSnapshot.exists) {
+          var friendsData = friendsSnapshot.data();
+
+          // Check if the data is not null and contains the 'friends' key
+          if (friendsData != null && friendsData['friends'] != null) {
+            var friendsList = friendsData['friends'] as List;
+
+            // Iterate through each friend map
+            for (var friend in friendsList) {
+              if (friend is Map<String, dynamic>) {
+                // Extract and store the friend's username
+                if (friend['friendUsername'] != null) {
+                  fetchedFriendNames.add(friend['friendUsername'] as String);
+                } else {
+                  print(
+                      "The 'friendUsername' field is missing in friend object");
+                }
+              }
+            }
+          } else {
+            print("The 'friends' field is missing in document");
+          }
+        } else {
+          print("No document found for userId: $uid");
+        }
+
+        // Update the observable lists
+        friendNames.assignAll(fetchedFriendNames);
+      }
+    } catch (e) {
+      print('Error completing: $e');
     }
   }
 }
