@@ -17,6 +17,16 @@ class DebtTicketController extends GetxController {
       BankAccountController.instance;
   var isPaid = true.obs;
 
+  @override
+  void initState() {
+    super.onStart;
+  }
+
+  @override
+  void onClosed() {
+    super.onClose();
+  }
+
   Future<void> saveDebtTicket(DebtTicket ticket, String username) async {
     try {
       await FirebaseFirestore.instance

@@ -11,14 +11,7 @@ class Expenses extends StatelessWidget {
   Widget build(BuildContext context) {
     final ExpensesController expensesController = Get.find();
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Get.back();
-          },
-          icon: const Icon(Icons.keyboard_backspace_rounded),
-        ),
-      ),
+      appBar: AppBar(),
       body: SingleChildScrollView(
         child: Padding(
           padding: TSpacingStyle.paddingWithAppBarHeight,
@@ -78,7 +71,7 @@ class Expenses extends StatelessWidget {
                               print('Error fetching data: ${e.toString()}');
                               return Text(
                                 'Error: ${e.toString()}',
-                                style: TextStyle(color: Colors.red),
+                                style: const TextStyle(color: Colors.red),
                               );
                             }
                           }),
@@ -421,41 +414,66 @@ class Expenses extends StatelessWidget {
   }
 
   Obx paiChart(ExpensesController expensesController) {
-    return Obx(() {
-      bool amountPaid = expensesController.amountPaid.value;
-      return PieChart(
-        PieChartData(
-          startDegreeOffset: 0,
-          sectionsSpace: 0,
-          centerSpaceRadius: 100,
-          sections: [
-            PieChartSectionData(
-              value: amountPaid
-                  ? expensesController.highestPercentYouPaid.value
-                  : expensesController.highestPercentYouReceive.value,
-              color: Colors.amberAccent,
-              radius: 45,
-              showTitle: false,
+    try {
+      var errorNoAmountPaid = expensesController.errorNoAmountPaid.value;
+      var errorNoAmountReceive = expensesController.errorNoAmountReceive.value;
+
+      if (errorNoAmountPaid == '' && errorNoAmountReceive == '') {
+        return Obx(() {
+          bool amountPaid = expensesController.amountPaid.value;
+          return PieChart(
+            PieChartData(
+              startDegreeOffset: 0,
+              sectionsSpace: 0,
+              centerSpaceRadius: 100,
+              sections: [
+                PieChartSectionData(
+                  value: amountPaid
+                      ? expensesController.highestPercentYouPaid.value
+                      : expensesController.highestPercentYouReceive.value,
+                  color: Colors.amberAccent,
+                  radius: 45,
+                  showTitle: false,
+                ),
+                PieChartSectionData(
+                  value: amountPaid
+                      ? expensesController.secondHighestPercentYouPaid.value
+                      : expensesController.secondHighestPercentYouReceive.value,
+                  color: const Color.fromRGBO(68, 119, 249, 1),
+                  radius: 25,
+                  showTitle: false,
+                ),
+                PieChartSectionData(
+                  value: amountPaid
+                      ? expensesController.lastPercentYouPaid.value
+                      : expensesController.lastPercentYouReceive.value,
+                  color: const Color.fromARGB(255, 242, 24, 42),
+                  radius: 20,
+                  showTitle: false,
+                ),
+              ],
             ),
-            PieChartSectionData(
-              value: amountPaid
-                  ? expensesController.secondHighestPercentYouPaid.value
-                  : expensesController.secondHighestPercentYouReceive.value,
-              color: const Color.fromRGBO(68, 119, 249, 1),
-              radius: 25,
-              showTitle: false,
+          );
+        });
+      } else {
+        return Obx(() {
+          bool amountPaid = expensesController.amountPaid.value;
+          return Center(
+            child: Text(
+              amountPaid
+                  ? expensesController.errorNoAmountPaid.value
+                  : expensesController.errorNoAmountReceive.value,
+              style: const TextStyle(fontSize: TSizes.fontSizeSm),
             ),
-            PieChartSectionData(
-              value: amountPaid
-                  ? expensesController.lastPercentYouPaid.value
-                  : expensesController.lastPercentYouReceive.value,
-              color: const Color.fromARGB(255, 242, 24, 42),
-              radius: 20,
-              showTitle: false,
-            ),
-          ],
-        ),
-      );
-    });
+          );
+        });
+      }
+    } catch (e) {
+      return Obx(() {
+        return const Center(
+          child: Text('An error occurred'),
+        );
+      });
+    }
   }
 }

@@ -16,7 +16,7 @@ class DebtDetailsSection extends StatelessWidget {
         Obx(() => AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: homeController.isYouOweSelected.value ? 150 : 120,
-              height: homeController.isYouOweSelected.value ? 50 : 40,
+              height: homeController.isYouOweSelected.value ? 60 : 40,
               decoration: BoxDecoration(
                 color: const Color(0xFFF0CA00).withOpacity(0.82),
                 borderRadius: BorderRadius.circular(100),
@@ -61,7 +61,7 @@ class DebtDetailsSection extends StatelessWidget {
         Obx(() => AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: homeController.isOweYouSelected.value ? 150 : 120,
-              height: homeController.isOweYouSelected.value ? 50 : 40,
+              height: homeController.isOweYouSelected.value ? 60 : 40,
               decoration: BoxDecoration(
                 color: Colors.grey.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(100),
@@ -70,7 +70,7 @@ class DebtDetailsSection extends StatelessWidget {
                 children: [
                   const Padding(
                     padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.file_upload_outlined),
+                    child: Icon(Icons.file_download_outlined),
                   ),
                   GestureDetector(
                     onTap: () async {

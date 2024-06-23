@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:bucks_buddy/features/view_debt_analysis/model/expenses_model.dart';
+import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -61,6 +62,10 @@ class ExpensesController extends GetxController {
   var highestRmYouReceive = 0.0.obs;
   var secondHighestRmYouReceive = 0.0.obs;
   var lastRmYouReceive = 0.0.obs;
+
+  //
+  var errorNoAmountReceive = ''.obs;
+  var errorNoAmountPaid = ''.obs;
 
   @override
   void onInit() {
@@ -202,60 +207,66 @@ class ExpensesController extends GetxController {
   }
 
 //determine category score for amount receive
-  void determineHighestSecondAndLastYouReceive() {
-    // Create a list of tuples containing the category and the corresponding value
-    List<Map<String, dynamic>> values = [
-      {'category': 'Food', 'value': totalFoodPeoplePaid.value},
-      {'category': 'Personal', 'value': totalPersonalPeoplePaid.value},
-      {'category': 'Other', 'value': totalOtherPeoplePaid.value},
-    ];
-    // Sort the list based on the value in descending order
-    values.sort((a, b) => b['value'].compareTo(a['value']));
+  Future<String> determineHighestSecondAndLastYouReceive() async {
+    try {
+      // Create a list of tuples containing the category and the corresponding value
+      List<Map<String, dynamic>> values = [
+        {'category': 'Food', 'value': totalFoodPeoplePaid.value},
+        {'category': 'Personal', 'value': totalPersonalPeoplePaid.value},
+        {'category': 'Other', 'value': totalOtherPeoplePaid.value},
+      ];
+      // Sort the list based on the value in descending order
+      values.sort((a, b) => b['value'].compareTo(a['value']));
 
-    // Extract the highest, second highest, and last
-    var highest = values[0];
-    var secondHighest = values[1];
-    var last = values[2];
+      // Extract the highest, second highest, and last
+      var highest = values[0];
+      var secondHighest = values[1];
+      var last = values[2];
 
-    //convert to percentage
-    double totalValue = totalFoodPeoplePaid.value +
-        totalPersonalPeoplePaid.value +
-        totalOtherPeoplePaid.value;
+      //convert to percentage
+      double totalValue = totalFoodPeoplePaid.value +
+          totalPersonalPeoplePaid.value +
+          totalOtherPeoplePaid.value;
 
-    highestPercentYouReceive.value = (highest['value'] / totalValue) * 100;
-    secondHighestPercentYouReceive.value =
-        (secondHighest['value'] / totalValue) * 100;
-    lastPercentYouReceive.value = (last['value'] / totalValue) * 100;
+      highestPercentYouReceive.value = (highest['value'] / totalValue) * 100;
+      secondHighestPercentYouReceive.value =
+          (secondHighest['value'] / totalValue) * 100;
+      lastPercentYouReceive.value = (last['value'] / totalValue) * 100;
 
-    //for type category
-    highestCategoryYouReceive.value = highest['category'];
-    secondCategoryYouReceive.value = secondHighest['category'];
-    lastCategoryYouReceive.value = last['category'];
+      //for type category
+      highestCategoryYouReceive.value = highest['category'];
+      secondCategoryYouReceive.value = secondHighest['category'];
+      lastCategoryYouReceive.value = last['category'];
 
-    // get RM value for each of them
-    highestRmYouReceive.value = highest['value'];
-    secondHighestRmYouReceive.value = secondHighest['value'];
-    lastRmYouReceive.value = last['value'];
+      // get RM value for each of them
+      highestRmYouReceive.value = highest['value'];
+      secondHighestRmYouReceive.value = secondHighest['value'];
+      lastRmYouReceive.value = last['value'];
 
-    print('highest Percent: ${highestPercentYouReceive.value}');
-    print('second highest Percent: ${secondHighestPercentYouReceive.value}');
-    print('Last Percent: ${lastPercentYouReceive.value}');
+      print('highest Percent: ${highestPercentYouReceive.value}');
+      print('second highest Percent: ${secondHighestPercentYouReceive.value}');
+      print('Last Percent: ${lastPercentYouReceive.value}');
 
-    print('Highest: ${highest['category']} with value ${highest['value']}');
-    print(
-        'Second Highest: ${secondHighest['category']} with value ${secondHighest['value']}');
-    print('Last: ${last['category']} with value ${last['value']}');
-
+      print('Highest: ${highest['category']} with value ${highest['value']}');
+      print(
+          'Second Highest: ${secondHighest['category']} with value ${secondHighest['value']}');
+      print('Last: ${last['category']} with value ${last['value']}');
+    } catch (e) {
+      errorNoAmountReceive.value = e.toString();
+      return errorNoAmountReceive.value;
+    }
+    return errorNoAmountReceive.value;
     // You can use these values to update your UI or perform other logic
   }
 
-  void determineHighestSecondAndLastYouPaid() {
-    // Create a list of tuples containing the category and the corresponding value
-    List<Map<String, dynamic>> values = [
-      {'category': 'Food', 'value': totalFoodYouPaid.value},
-      {'category': 'Personal', 'value': totalPersonalYouPaid.value},
-      {'category': 'Other', 'value': totalOtherYouPaid.value},
-    ];
+  Future<String> determineHighestSecondAndLastYouPaid() async {
+    try {
+      // Create a list of tuples containing the category and the corresponding value
+      List<Map<String, dynamic>> values = [
+        {'category': 'Food', 'value': totalFoodYouPaid.value},
+        {'category': 'Personal', 'value': totalPersonalYouPaid.value},
+        {'category': 'Other', 'value': totalOtherYouPaid.value},
+      ];
 // The comparison function determines the order of elements in the list. It takes two elements (a and b) and returns:
 // A negative number if a should come before b.
 // Zero if a and b are equal in terms of ordering.
@@ -264,44 +275,48 @@ class ExpensesController extends GetxController {
 // If b[1] is greater than a[1], compareTo will return a positive number, meaning b should come before a in the sorted list.
 // If b[1] is less than a[1], compareTo will return a negative number, meaning a should come before b.
 
-    // Sort the list based on the value in descending order
-    values.sort((a, b) => b['value'].compareTo(a['value']));
+      // Sort the list based on the value in descending order
+      values.sort((a, b) => b['value'].compareTo(a['value']));
 
-    // Extract the highest, second highest, and last
-    var highest = values[0];
-    var secondHighest = values[1];
-    var last = values[2];
+      // Extract the highest, second highest, and last
+      var highest = values[0];
+      var secondHighest = values[1];
+      var last = values[2];
 
-    //convert to percentage
-    double totalValue = totalFoodYouPaid.value +
-        totalPersonalYouPaid.value +
-        totalOtherYouPaid.value;
+      //convert to percentage
+      double totalValue = totalFoodYouPaid.value +
+          totalPersonalYouPaid.value +
+          totalOtherYouPaid.value;
 
-    highestPercentYouPaid.value = (highest['value'] / totalValue) * 100;
-    secondHighestPercentYouPaid.value =
-        (secondHighest['value'] / totalValue) * 100;
-    lastPercentYouPaid.value = (last['value'] / totalValue) * 100;
+      highestPercentYouPaid.value = (highest['value'] / totalValue) * 100;
+      secondHighestPercentYouPaid.value =
+          (secondHighest['value'] / totalValue) * 100;
+      lastPercentYouPaid.value = (last['value'] / totalValue) * 100;
 
-    //for type category
-    highestCategoryYouPaid.value = highest['category'];
-    secondCategoryYouPaid.value = secondHighest['category'];
-    lastCategoryYouPaid.value = last['category'];
+      //for type category
+      highestCategoryYouPaid.value = highest['category'];
+      secondCategoryYouPaid.value = secondHighest['category'];
+      lastCategoryYouPaid.value = last['category'];
 
-    // get RM value for each of them
-    highestRmYouPaid.value = highest['value'];
-    secondHighestRmYouPaid.value = secondHighest['value'];
-    lastRmYouPaid.value = last['value'];
+      // get RM value for each of them
+      highestRmYouPaid.value = highest['value'];
+      secondHighestRmYouPaid.value = secondHighest['value'];
+      lastRmYouPaid.value = last['value'];
 
-    print('highest Percent you paid ${highestPercentYouPaid.value}');
-    print(
-        'Second highest Percent you paid ${secondHighestPercentYouPaid.value}');
-    print('Lowest Percent you paid ${lastPercentYouPaid.value}');
+      print('highest Percent you paid ${highestPercentYouPaid.value}');
+      print(
+          'Second highest Percent you paid ${secondHighestPercentYouPaid.value}');
+      print('Lowest Percent you paid ${lastPercentYouPaid.value}');
 
-    print('Highest: ${highest['category']} with value ${highest['value']}');
-    print(
-        'Second Highest: ${secondHighest['category']} with value ${secondHighest['value']}');
-    print('Last: ${last['category']} with value ${last['value']}');
-
+      print('Highest: ${highest['category']} with value ${highest['value']}');
+      print(
+          'Second Highest: ${secondHighest['category']} with value ${secondHighest['value']}');
+      print('Last: ${last['category']} with value ${last['value']}');
+    } catch (e) {
+      errorNoAmountPaid.value = e.toString();
+      return errorNoAmountPaid.value;
+    }
+    return errorNoAmountPaid.value;
     // You can use these values to update your UI or perform other logic
   }
 
